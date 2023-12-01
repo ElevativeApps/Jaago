@@ -19,8 +19,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         app:menu="@menu/bottom_navigation_bar"
+        android:background="@color/white"
         android:layout_alignParentBottom="true">
-
     </com.google.android.material.bottomnavigation.BottomNavigationView>
 
 </RelativeLayout>
