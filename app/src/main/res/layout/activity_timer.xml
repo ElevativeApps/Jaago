@@ -163,7 +163,6 @@
 
 
     <FrameLayout
-        android:id="@+id/btn_cancel"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:background="@drawable/circular_button_background"
@@ -174,6 +173,7 @@
         android:layout_marginBottom="24dp">
 
         <ImageView
+            android:id="@+id/btn_cancel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/ic_cancel"
@@ -183,7 +183,6 @@
     </FrameLayout>
 
     <FrameLayout
-        android:id="@+id/btn_reset"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:background="@drawable/circular_button_background"
@@ -194,6 +193,7 @@
         android:layout_marginBottom="24dp">
 
         <ImageView
+            android:id="@+id/btn_reset"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/ic_reset"

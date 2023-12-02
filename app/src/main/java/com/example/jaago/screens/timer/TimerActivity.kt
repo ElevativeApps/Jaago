@@ -19,6 +19,8 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
     private lateinit var timerPicker: LinearLayout
     private lateinit var btnPlay: ImageView
     private lateinit var btnPause: ImageView
+    private lateinit var btnReset: ImageView
+    private lateinit var btnCancel: ImageView
     private lateinit var progressBar: ProgressBar
     private lateinit var flTimer : FrameLayout
     private var countDownTimer: CountDownTimer? = null
@@ -42,6 +44,8 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
         timerPicker = findViewById(R.id.ll_timer)
         btnPlay = findViewById(R.id.btn_play)
         btnPause = findViewById(R.id.btn_pause)
+        btnReset = findViewById(R.id.btn_reset)
+        btnCancel = findViewById(R.id.btn_cancel)
         progressBar = findViewById(R.id.pb_timer)
         flTimer = findViewById(R.id.fl_timer)
 
@@ -77,6 +81,14 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
 
         btnPause.setOnClickListener{
             pauseTimer()
+        }
+
+        btnReset.setOnClickListener {
+            resetTimer()
+        }
+
+        btnCancel.setOnClickListener{
+            cancelTimer()
         }
     }
     override fun onClick(v: View?) {
@@ -143,6 +155,30 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
         updateButtonVisibility()
     }
 
+    private fun resetTimer() {
+        countDownTimer?.cancel()
+        isTimerRunning = false
+        updateButtonVisibility()
+        remainingTimeInMillis = calculateTotalTime()
+        timerPicker.visibility = View.GONE
+        updateTimeDisplay(remainingTimeInMillis - 1000)
+        updateProgressBar(remainingTimeInMillis)
+        timerDisplay.visibility = View.VISIBLE
+        progressBar.visibility = View.VISIBLE
+        flTimer.visibility = View.VISIBLE
+    }
+
+    private fun cancelTimer() {
+        countDownTimer?.cancel()
+        isTimerRunning = false
+        updateButtonVisibility()
+        remainingTimeInMillis = 0
+        timerPicker.visibility = View.VISIBLE
+        timerDisplay.visibility = View.GONE
+        progressBar.visibility = View.GONE
+        flTimer.visibility = View.GONE
+    }
+
     private fun updateButtonVisibility() {
         if (isTimerRunning) {
             btnPlay.visibility = View.INVISIBLE
@@ -154,9 +190,9 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
     }
 
     private fun updateTimeDisplay(millisUntilFinished: Long) {
-        val hours = (millisUntilFinished / 3600000).toInt()
-        val minutes = ((millisUntilFinished % 3600000) / 60000).toInt()
-        val seconds = ((millisUntilFinished % 60000) / 1000).toInt()
+        val hours = ((millisUntilFinished + 1000) / 3600000).toInt()
+        val minutes = (((millisUntilFinished + 1000) % 3600000) / 60000).toInt()
+        val seconds = (((millisUntilFinished + 1000) % 60000) / 1000).toInt()
 
         timerDisplay.text = String.format("%02d:%02d:%02d", hours, minutes, seconds)
     }
