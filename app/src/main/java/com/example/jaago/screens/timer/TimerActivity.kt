@@ -45,7 +45,6 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
         progressBar = findViewById(R.id.pb_timer)
         flTimer = findViewById(R.id.fl_timer)
 
-        Toast.makeText(mContext , "Toast main branch" , Toast.LENGTH_SHORT).show()
     }
 
     private fun setUpNumberPicker() {
@@ -72,7 +71,7 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
             if (isTimerRunning) {
                 pauseTimer()
             } else {
-                startTimer()
+                startTimer(remainingTimeInMillis)
             }
         }
 
@@ -85,11 +84,10 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
             R.id.btn_play -> {
                 timerDisplay.visibility = View.VISIBLE
                 timerPicker.visibility = View.GONE
-//                startTimer()
                 if (isTimerRunning) {
                     pauseTimer()
                 } else {
-                    startTimer()
+                    startTimer(remainingTimeInMillis)
                 }
             }
             R.id.btn_cancel -> {
@@ -103,16 +101,23 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
             }
         }
     }
-
-    private fun startTimer() {
+    private fun calculateTotalTime(): Long {
         val hours = hourPicker.value
         val minutes = minutePicker.value
         val seconds = secondPicker.value
         totalTimeInMillis = ((hours * 3600 + minutes * 60 + seconds) * 1000).toLong()
+        return totalTimeInMillis
+    }
 
+    private fun startTimer(initialTime: Long) {
+        remainingTimeInMillis = initialTime
+        if (remainingTimeInMillis == 0L) {
+            remainingTimeInMillis = calculateTotalTime()
+        }
         countDownTimer?.cancel()
-        countDownTimer = object : CountDownTimer(totalTimeInMillis, 1000) {
+        countDownTimer = object : CountDownTimer(remainingTimeInMillis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
+                remainingTimeInMillis = millisUntilFinished
                 updateTimeDisplay(millisUntilFinished)
                 updateProgressBar(millisUntilFinished)
             }
