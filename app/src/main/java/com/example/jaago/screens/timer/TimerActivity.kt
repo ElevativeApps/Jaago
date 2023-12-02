@@ -44,6 +44,8 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
         btnPause = findViewById(R.id.btn_pause)
         progressBar = findViewById(R.id.pb_timer)
         flTimer = findViewById(R.id.fl_timer)
+
+        Toast.makeText(mContext , "This is navigation toast" , Toast.LENGTH_SHORT).show()
     }
 
     private fun setUpNumberPicker() {
