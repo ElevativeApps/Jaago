@@ -129,7 +129,8 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
                 timerPicker.visibility = View.VISIBLE
                 isTimerRunning = false
                 updateButtonVisibility()
-                Toast.makeText(mContext , "Time Completed" , Toast.LENGTH_SHORT).show()
+                remainingTimeInMillis = 0
+                Toast.makeText(mContext, "Time Completed", Toast.LENGTH_SHORT).show()
             }
         }.start()
         isTimerRunning = true
