@@ -1,11 +1,24 @@
 package com.example.jaago.screens.timer
 
+import android.Manifest
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.util.Log
 import android.view.View
 import android.widget.*
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.jaago.R
 import com.example.jaago.screens.base.BaseActivity
 
@@ -27,13 +40,47 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
     private var totalTimeInMillis: Long = 0
     private var isTimerRunning = false
     private var remainingTimeInMillis: Long = 0
+    private lateinit var mediaPlayer: MediaPlayer
+    lateinit var notificationManager: NotificationManagerCompat
+    private lateinit var notificationChannelId: String
+    val notificationId = 1
+    private val MY_PERMISSIONS_REQUEST_VIBRATE = 123
+
+    companion object {
+        var instance: TimerActivity? = null
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val fragmentLayout = findViewById<LinearLayout>(R.id.fragment_layout)
         layoutInflater.inflate(R.layout.activity_timer , fragmentLayout)
-
+        instance = this
         init()
         setUpNumberPicker()
+//        notificationManager =
+//            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager = NotificationManagerCompat.from(this)
+        notificationChannelId = "timer_channel"
+        createNotificationChannel()
+
+
+        // Create notification channel for Android Oreo and above
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+////            val channel = NotificationChannel(
+////                notificationChannelId,
+////                "Timer Notification Channel",
+////                NotificationManager.IMPORTANCE_HIGH
+////            )
+////            notificationManager.createNotificationChannel(channel)
+//            val name = getString(R.string.channel_name)
+//            val descriptionText = getString(R.string.channel_description)
+//            val importance = NotificationManager.IMPORTANCE_HIGH
+//            val mChannel = NotificationChannel(notificationChannelId, name, importance)
+//            mChannel.description = descriptionText
+//            // Register the channel with the system. You can't change the importance
+//            // or other notification behaviors after this.
+////            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+//            notificationManager.createNotificationChannel(mChannel)
+//        }
     }
     private fun init(){
         mContext = this
@@ -49,6 +96,20 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
         progressBar = findViewById(R.id.pb_timer)
         flTimer = findViewById(R.id.fl_timer)
 
+    }
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Timer Notification Channel"
+            val descriptionText = "Channel for timer notifications"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(notificationChannelId, name, importance).apply {
+                description = descriptionText
+            }
+
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 
     private fun setUpNumberPicker() {
@@ -142,6 +203,8 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
                 isTimerRunning = false
                 updateButtonVisibility()
                 remainingTimeInMillis = 0
+                playNotificationSound()
+                showNotification()
                 Toast.makeText(mContext, "Time Completed", Toast.LENGTH_SHORT).show()
             }
         }.start()
@@ -149,6 +212,93 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
         updateButtonVisibility()
     }
 
+    private fun playNotificationSound() {
+        // Initialize and start playing the sound
+        mediaPlayer = MediaPlayer.create(this, R.raw.test1)
+        mediaPlayer.isLooping = true
+        mediaPlayer.start()
+    }
+    fun stopNotificationSound() {
+        // Stop the sound when the timer is stopped or the user presses the "Stop" button
+        if (mediaPlayer.isPlaying) {
+            mediaPlayer.stop()
+            mediaPlayer.release()
+        }
+    }
+
+    fun cancelNotification(){
+        notificationManager.cancel(notificationId)
+    }
+    private fun showNotification() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.VIBRATE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // You might want to show a rationale to the user and then request the permission
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.VIBRATE),
+                MY_PERMISSIONS_REQUEST_VIBRATE
+            )
+        } else {
+            // Permission already granted, proceed with your logic
+
+            val notificationIntent = Intent(this, TimerActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val stopIntent = Intent(this, NotificationReceiver::class.java)
+            stopIntent.action = "STOP_ACTION"
+            val stopPendingIntent = PendingIntent.getBroadcast(
+                this,
+                0,
+                stopIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val notification = NotificationCompat.Builder(this, notificationChannelId)
+                .setContentTitle("Timer Completed")
+                .setContentText("Click to stop the sound")
+                .setSmallIcon(R.drawable.ic_stop_watch)
+                .setVibrate(longArrayOf(0))
+                .setDefaults(Notification.DEFAULT_SOUND or Notification.DEFAULT_VIBRATE )
+                .setContentIntent(pendingIntent)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setSilent(true)
+                .addAction(R.drawable.ic_stop_watch, "Stop", stopPendingIntent)
+                .build()
+
+            notificationManager.notify(notificationId, notification)
+        }
+    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        Log.d("TimerActivity", "onRequestPermissionsResult called")
+        when (requestCode) {
+            MY_PERMISSIONS_REQUEST_VIBRATE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted, proceed with your logic
+                    showNotification()
+                } else {
+                    // Permission denied, handle accordingly
+                    Toast.makeText(
+                        this,
+                        "Vibration permission is required for this feature.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
     private fun pauseTimer() {
         countDownTimer?.cancel()
         isTimerRunning = false
@@ -203,6 +353,9 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel()
+        if (::mediaPlayer.isInitialized && mediaPlayer.isPlaying) {
+            stopNotificationSound()
+        }
     }
 
 }
