@@ -18,6 +18,7 @@ class AlarmActivity : BaseActivity() {
     private lateinit var addButton: FloatingActionButton
     private lateinit var dbHelper: AlarmDbHelper
     private lateinit var alarmAdapter: AlarmAdapter
+    private lateinit var alarms: MutableList<AlarmItem>
     companion object {
         const val TIME_SELECTION_REQUEST_CODE = 1
     }
@@ -33,10 +34,14 @@ class AlarmActivity : BaseActivity() {
         }
         dbHelper = AlarmDbHelper(this)
         // Fetch and display existing alarms
-        val alarms = getAllAlarms().toMutableList()
+        alarms = getAllAlarms().toMutableList()
         val recyclerView = findViewById<RecyclerView>(R.id.rv_alarm)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        alarmAdapter = AlarmAdapter(alarms)
+        alarmAdapter = AlarmAdapter(alarms) { position ->
+            // Handle delete click event
+            deleteAlarm(position)
+        }
+//        alarmAdapter = AlarmAdapter(alarms)
         recyclerView.adapter = alarmAdapter
     }
 
@@ -60,6 +65,21 @@ class AlarmActivity : BaseActivity() {
         }
         cursor.close()
         return alarms
+    }
+
+    private fun deleteAlarm(position: Int) {
+        // Delete alarm from the database
+        val db = dbHelper.writableDatabase
+        val timeToDelete = alarms[position].time
+        db.delete(
+            AlarmDbHelper.TABLE_NAME,
+            "${AlarmDbHelper.COLUMN_TIME} = ?",
+            arrayOf(timeToDelete)
+        )
+
+        // Remove alarm from the list and update the adapter
+        alarms.removeAt(position)
+        alarmAdapter.notifyItemRemoved(position)
     }
 
     private fun insertAlarm(time: String) {

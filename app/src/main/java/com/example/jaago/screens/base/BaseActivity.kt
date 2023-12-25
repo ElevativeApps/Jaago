@@ -1,19 +1,16 @@
 package com.example.jaago.screens.base
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import androidx.core.content.ContextCompat.startActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.example.jaago.R
 import com.example.jaago.screens.alarm.AlarmActivity
 import com.example.jaago.screens.stopwatch.StopwatchActivity
 import com.example.jaago.screens.timer.TimerActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import org.w3c.dom.Text
 
 open class BaseActivity : AppCompatActivity() {
     private var menuInflated = false
