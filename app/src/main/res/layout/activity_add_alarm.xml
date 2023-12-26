@@ -90,6 +90,7 @@
                 android:orientation="horizontal"
                 android:layout_margin="10dp">
                 <TextView
+                    android:id="@+id/tv_everyDay"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -100,6 +101,7 @@
                     android:layout_margin="10dp"
                     android:padding="5dp"/>
                 <TextView
+                    android:id="@+id/tv_weekDay"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -110,6 +112,7 @@
                     android:layout_margin="10dp"
                     android:padding="5dp"/>
                 <TextView
+                    android:id="@+id/tv_weekEnd"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -139,6 +142,7 @@
                         android:orientation="horizontal">
 
                         <CheckBox
+                            android:id="@+id/cb_monday"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
@@ -158,6 +162,7 @@
                         android:orientation="horizontal">
 
                         <CheckBox
+                            android:id="@+id/cb_tuesday"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
@@ -176,6 +181,7 @@
                         android:orientation="horizontal">
 
                         <CheckBox
+                            android:id="@+id/cb_wednesday"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
@@ -194,6 +200,7 @@
                         android:orientation="horizontal">
 
                         <CheckBox
+                            android:id="@+id/cb_thursday"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
@@ -220,6 +227,7 @@
                         android:orientation="horizontal">
 
                         <CheckBox
+                            android:id="@+id/cb_friday"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
@@ -238,6 +246,7 @@
                         android:orientation="horizontal">
 
                         <CheckBox
+                            android:id="@+id/cb_saturday"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
@@ -256,6 +265,7 @@
                         android:orientation="horizontal">
 
                         <CheckBox
+                            android:id="@+id/cb_sunday"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
