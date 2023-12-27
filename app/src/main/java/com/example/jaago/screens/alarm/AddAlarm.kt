@@ -56,6 +56,8 @@ class AddAlarm : AppCompatActivity() {
             checkSelectedDays()
             val selectedTime = "$hour:$minute"
             val resultIntent = Intent()
+            val uniqueId = System.currentTimeMillis()
+            resultIntent.putExtra(SELECTED_ID, uniqueId)
             resultIntent.putExtra(SELECTED_TIME, selectedTime)
             resultIntent.putExtra(SELECTED_DAYS, selectedDays?.toTypedArray())
             setResult(Activity.RESULT_OK, resultIntent)
@@ -175,6 +177,7 @@ class AddAlarm : AppCompatActivity() {
     }
 
     companion object {
+        const val SELECTED_ID = "selected_id"
         const val SELECTED_TIME = "selected_time"
         const val SELECTED_DAYS = "selected_days"
     }

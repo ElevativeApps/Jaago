@@ -9,7 +9,7 @@ class AlarmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
 
     companion object {
         const val DATABASE_NAME = "alarm_database"
-        const val DATABASE_VERSION = 5
+        const val DATABASE_VERSION = 6
 
         const val TABLE_NAME = "alarms"
         const val COLUMN_ID = "_id"
@@ -24,7 +24,8 @@ class AlarmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
             $COLUMN_TIME TEXT,
             $COLUMN_SELECTED_DAYS TEXT,
-            $COLUMN_IS_CHECKED INTEGER DEFAULT 0
+            $COLUMN_IS_CHECKED INTEGER DEFAULT 0,
+            UNIQUE ($COLUMN_TIME, $COLUMN_SELECTED_DAYS)
         )
     """.trimIndent()
 

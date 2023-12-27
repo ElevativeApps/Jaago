@@ -64,7 +64,7 @@ class AlarmActivity : BaseActivity() {
         val db = dbHelper.writableDatabase
         val cursor: Cursor? = db.query(
             AlarmDbHelper.TABLE_NAME,
-            arrayOf(AlarmDbHelper.COLUMN_TIME, AlarmDbHelper.COLUMN_IS_CHECKED , AlarmDbHelper.COLUMN_SELECTED_DAYS),
+            arrayOf( AlarmDbHelper.COLUMN_ID, AlarmDbHelper.COLUMN_TIME, AlarmDbHelper.COLUMN_IS_CHECKED , AlarmDbHelper.COLUMN_SELECTED_DAYS),
             null,
             null,
             null,
@@ -72,25 +72,41 @@ class AlarmActivity : BaseActivity() {
             null
         )
         while (cursor?.moveToNext() == true) {
+            val id = cursor.getLong(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_ID))
             val time = cursor.getString(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_TIME))
             val isChecked = cursor.getInt(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_IS_CHECKED)) == 1
             val selectedDaysString = cursor.getString(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_SELECTED_DAYS)) ?: ""
             val selectedDays = selectedDaysString.split(",").toList()
-            val alarmItem = AlarmItem(time , selectedDays , isChecked)
+            val alarmItem = AlarmItem( id , time , selectedDays , isChecked)
             alarms.add(alarmItem)
         }
         cursor?.close()
         return alarms
     }
 
+//    private fun deleteAlarm(position: Int) {
+//        // Delete alarm from the database
+//        val db = dbHelper.writableDatabase
+//        val timeToDelete = alarms[position].time
+//        db.delete(
+//            AlarmDbHelper.TABLE_NAME,
+//            "${AlarmDbHelper.COLUMN_TIME} = ?",
+//            arrayOf(timeToDelete)
+//        )
+//
+//        // Remove alarm from the list and update the adapter
+//        alarms.removeAt(position)
+//        alarmAdapter.notifyItemRemoved(position)
+//    }
+
     private fun deleteAlarm(position: Int) {
         // Delete alarm from the database
         val db = dbHelper.writableDatabase
-        val timeToDelete = alarms[position].time
+        val idToDelete = alarms[position].id // Assuming you have an 'id' property in your AlarmItem class
         db.delete(
             AlarmDbHelper.TABLE_NAME,
-            "${AlarmDbHelper.COLUMN_TIME} = ?",
-            arrayOf(timeToDelete)
+            "${AlarmDbHelper.COLUMN_ID} = ?",
+            arrayOf(idToDelete.toString())
         )
 
         // Remove alarm from the list and update the adapter
@@ -98,9 +114,10 @@ class AlarmActivity : BaseActivity() {
         alarmAdapter.notifyItemRemoved(position)
     }
 
-    private fun insertAlarm(time: String , selectedDays: Array<String>?) {
+    private fun insertAlarm(id: Long,time: String , selectedDays: Array<String>?) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
+            put(AlarmDbHelper.COLUMN_ID, id)
             put(AlarmDbHelper.COLUMN_TIME, time)
             put(AlarmDbHelper.COLUMN_SELECTED_DAYS, selectedDays?.joinToString(","))
             put(AlarmDbHelper.COLUMN_IS_CHECKED, false)
@@ -111,12 +128,13 @@ class AlarmActivity : BaseActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == TIME_SELECTION_REQUEST_CODE && resultCode == RESULT_OK) {
+            val selectedId = data?.getLongExtra(AddAlarm.SELECTED_ID, -1) ?: -1
             val selectedTime = data?.getStringExtra(AddAlarm.SELECTED_TIME)
             val selectedDays = data?.getStringArrayExtra(AddAlarm.SELECTED_DAYS)
             selectedTime?.let {
                 // Save the new alarm to the database
-                insertAlarm(it, selectedDays)
-                alarmAdapter.addAlarm(AlarmItem(it, selectedDays?.toList() ?: emptyList(), false))
+                insertAlarm( selectedId ,it, selectedDays)
+                alarmAdapter.addAlarm(AlarmItem(selectedId ,it, selectedDays?.toList() ?: emptyList(), true ))
             }
         }
     }
