@@ -7,17 +7,21 @@ import com.example.jaago.R
 import com.example.jaago.model.AlarmItem
 import com.example.jaago.screens.alarm.viewholder.AlarmViewHolder
 
-class AlarmAdapter(private val alarms: MutableList<AlarmItem>, private val onDeleteClickListener: (position: Int) -> Unit) : RecyclerView.Adapter<AlarmViewHolder>() {
+class AlarmAdapter(private val alarms: MutableList<AlarmItem>, private val onDeleteClickListener: (position: Int) -> Unit ,
+                   private val onItemClick: (position: Int) -> Unit) : RecyclerView.Adapter<AlarmViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_alarm, parent, false)
-        return AlarmViewHolder(view , onDeleteClickListener)
+        return AlarmViewHolder(view , onDeleteClickListener , onItemClick )
     }
 
     override fun onBindViewHolder(holder: AlarmViewHolder, position: Int) {
         val alarm = alarms[position]
         holder.bind(alarm)
+        holder.itemView.setOnClickListener {
+            onItemClick(position)
+        }
     }
 
     override fun getItemCount(): Int {

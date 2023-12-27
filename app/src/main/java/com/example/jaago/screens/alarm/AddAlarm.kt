@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.NumberPicker
@@ -23,6 +24,7 @@ class AddAlarm : AppCompatActivity() {
     private lateinit var cbFriday: CheckBox
     private lateinit var cbSaturday: CheckBox
     private lateinit var cbSunday: CheckBox
+    private var selectedDays: MutableList<String>? = null
     private var isSelectedEveryDay: Boolean = false
     private var isSelectedWeekDay: Boolean = false
     private var isSelectedWeekEnd: Boolean = false
@@ -51,16 +53,50 @@ class AddAlarm : AppCompatActivity() {
         saveButton.setOnClickListener {
             val hour = hourPicker.value
             val minute = minutePicker.value
-
+            checkSelectedDays()
             val selectedTime = "$hour:$minute"
             val resultIntent = Intent()
             resultIntent.putExtra(SELECTED_TIME, selectedTime)
+            resultIntent.putExtra(SELECTED_DAYS, selectedDays?.toTypedArray())
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
         }
 
         init()
+
+        val selectedTime = intent.getStringExtra(SELECTED_TIME)
+        val selectedDays_1 = intent.getStringArrayExtra(SELECTED_DAYS)
+        if (!selectedTime.isNullOrEmpty()) {
+            val timeParts = selectedTime.split(":")
+            hourPicker.value = timeParts[0].toInt()
+            minutePicker.value = timeParts[1].toInt()
+        }
+        Log.d("selectedDays_1", "Selected Days: ${selectedDays_1?.contentToString()}")
+        selectedDays_1?.forEach { day ->
+            when (day) {
+                "_monday" -> cbMonday.isChecked = true
+                "_tuesday" -> cbTuesday.isChecked = true
+                "_wednesday" -> cbWednesday.isChecked = true
+                "_thursday" -> cbThursday.isChecked = true
+                "_friday" -> cbFriday.isChecked = true
+                "_saturday" -> cbSaturday.isChecked = true
+                "_sunday" -> cbSunday.isChecked = true
+            }
+        }
     }
+
+    private fun checkSelectedDays() {
+        selectedDays = mutableListOf()
+        val checkBoxes = arrayOf(cbMonday, cbTuesday, cbWednesday, cbThursday, cbFriday, cbSaturday, cbSunday)
+        for (checkBox in checkBoxes) {
+            if (checkBox.isChecked) {
+                // Extract the day from the CheckBox's ID
+                val day = resources.getResourceEntryName(checkBox.id).substring(2)
+                selectedDays?.add(day)
+            }
+        }
+    }
+
     private fun init(){
         everyDay = findViewById(R.id.tv_everyDay)
         weekDay = findViewById(R.id.tv_weekDay)
@@ -140,5 +176,6 @@ class AddAlarm : AppCompatActivity() {
 
     companion object {
         const val SELECTED_TIME = "selected_time"
+        const val SELECTED_DAYS = "selected_days"
     }
 }

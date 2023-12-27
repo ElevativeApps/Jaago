@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.jaago.R
 import com.example.jaago.model.AlarmItem
 
-class AlarmViewHolder(itemView: View, private val onDeleteClickListener: (position: Int) -> Unit) : RecyclerView.ViewHolder(itemView) {
+class AlarmViewHolder(itemView: View, private val onDeleteClickListener: (position: Int) -> Unit , private val onItemClick: (position: Int) -> Unit) : RecyclerView.ViewHolder(itemView) {
     private val timeTextView: TextView = itemView.findViewById(R.id.tvTime)
     private val switchAlarm: Switch = itemView.findViewById(R.id.switchAlarm)
     private val deleteIcon: ImageView = itemView.findViewById(R.id.iv_delete)
@@ -18,6 +18,9 @@ class AlarmViewHolder(itemView: View, private val onDeleteClickListener: (positi
     init {
         deleteIcon.setOnClickListener {
             showDeleteDialog()
+        }
+        itemView.setOnClickListener {
+            onItemClick(adapterPosition)
         }
     }
 

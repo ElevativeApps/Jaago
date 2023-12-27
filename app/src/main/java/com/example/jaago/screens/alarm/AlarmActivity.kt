@@ -37,33 +37,49 @@ class AlarmActivity : BaseActivity() {
         alarms = getAllAlarms().toMutableList()
         val recyclerView = findViewById<RecyclerView>(R.id.rv_alarm)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        alarmAdapter = AlarmAdapter(alarms) { position ->
-            // Handle delete click event
-            deleteAlarm(position)
-        }
+        alarmAdapter = AlarmAdapter(alarms,
+            onDeleteClickListener = { position ->
+                // Handle delete click event
+                deleteAlarm(position)
+            },
+            onItemClick = { position ->
+                // Handle item click event
+                startAddAlarmActivityWithPreSelection(position)
+            }
+        )
 //        alarmAdapter = AlarmAdapter(alarms)
         recyclerView.adapter = alarmAdapter
     }
 
+    private fun startAddAlarmActivityWithPreSelection(position: Int) {
+        val selectedAlarm = alarms[position]
+        val intent = Intent(this, AddAlarm::class.java).apply {
+            putExtra(AddAlarm.SELECTED_TIME, selectedAlarm.time)
+            putExtra(AddAlarm.SELECTED_DAYS, selectedAlarm.selectedDays.toTypedArray())
+        }
+        startActivityForResult(intent, TIME_SELECTION_REQUEST_CODE)
+    }
     private fun getAllAlarms(): List<AlarmItem> {
         val alarms = mutableListOf<AlarmItem>()
-        val db = dbHelper.readableDatabase
-        val cursor: Cursor = db.query(
+        val db = dbHelper.writableDatabase
+        val cursor: Cursor? = db.query(
             AlarmDbHelper.TABLE_NAME,
-            arrayOf(AlarmDbHelper.COLUMN_TIME, AlarmDbHelper.COLUMN_IS_CHECKED),
+            arrayOf(AlarmDbHelper.COLUMN_TIME, AlarmDbHelper.COLUMN_IS_CHECKED , AlarmDbHelper.COLUMN_SELECTED_DAYS),
             null,
             null,
             null,
             null,
             null
         )
-        while (cursor.moveToNext()) {
+        while (cursor?.moveToNext() == true) {
             val time = cursor.getString(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_TIME))
             val isChecked = cursor.getInt(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_IS_CHECKED)) == 1
-            val alarmItem = AlarmItem(time, isChecked)
+            val selectedDaysString = cursor.getString(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_SELECTED_DAYS)) ?: ""
+            val selectedDays = selectedDaysString.split(",").toList()
+            val alarmItem = AlarmItem(time , selectedDays , isChecked)
             alarms.add(alarmItem)
         }
-        cursor.close()
+        cursor?.close()
         return alarms
     }
 
@@ -82,10 +98,12 @@ class AlarmActivity : BaseActivity() {
         alarmAdapter.notifyItemRemoved(position)
     }
 
-    private fun insertAlarm(time: String) {
+    private fun insertAlarm(time: String , selectedDays: Array<String>?) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(AlarmDbHelper.COLUMN_TIME, time)
+            put(AlarmDbHelper.COLUMN_SELECTED_DAYS, selectedDays?.joinToString(","))
+            put(AlarmDbHelper.COLUMN_IS_CHECKED, false)
         }
         db.insert(AlarmDbHelper.TABLE_NAME, null, values)
     }
@@ -94,10 +112,11 @@ class AlarmActivity : BaseActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == TIME_SELECTION_REQUEST_CODE && resultCode == RESULT_OK) {
             val selectedTime = data?.getStringExtra(AddAlarm.SELECTED_TIME)
+            val selectedDays = data?.getStringArrayExtra(AddAlarm.SELECTED_DAYS)
             selectedTime?.let {
                 // Save the new alarm to the database
-                insertAlarm(it)
-                alarmAdapter.addAlarm(AlarmItem(it, false))
+                insertAlarm(it, selectedDays)
+                alarmAdapter.addAlarm(AlarmItem(it, selectedDays?.toList() ?: emptyList(), false))
             }
         }
     }
