@@ -50,7 +50,7 @@ class AlarmActivity : BaseActivity() {
         )
 //        alarmAdapter = AlarmAdapter(alarms)
         recyclerView.adapter = alarmAdapter
-        Toast.makeText(this , "GitHub test main" , Toast.LENGTH_SHORT).show()
+        Toast.makeText(this , "GitHub test Alarm" , Toast.LENGTH_SHORT).show()
     }
 
     private fun startAddAlarmActivityWithPreSelection(position: Int) {
