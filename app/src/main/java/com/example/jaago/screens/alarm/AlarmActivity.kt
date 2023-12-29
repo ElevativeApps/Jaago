@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.NumberPicker
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.jaago.R
@@ -49,6 +50,7 @@ class AlarmActivity : BaseActivity() {
         )
 //        alarmAdapter = AlarmAdapter(alarms)
         recyclerView.adapter = alarmAdapter
+        Toast.makeText(this , "GitHub test Alarm" , Toast.LENGTH_SHORT).show()
     }
 
     private fun startAddAlarmActivityWithPreSelection(position: Int) {
