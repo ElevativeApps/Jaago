@@ -9,10 +9,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.jaago.R
 import com.example.jaago.model.AlarmItem
+import com.example.jaago.screens.alarm.AlarmAdapter
 
-class AlarmViewHolder(itemView: View, private val onDeleteClickListener: (position: Int) -> Unit , private val onItemClick: (position: Int) -> Unit) : RecyclerView.ViewHolder(itemView) {
+class AlarmViewHolder(itemView: View, private val onDeleteClickListener: (position: Int) -> Unit , private val onItemClick: (position: Int) -> Unit ,  private val alarmAdapter: AlarmAdapter) : RecyclerView.ViewHolder(itemView) {
     private val timeTextView: TextView = itemView.findViewById(R.id.tvTime)
-    private val switchAlarm: Switch = itemView.findViewById(R.id.switchAlarm)
+    val switchAlarm: Switch = itemView.findViewById(R.id.switchAlarm)
     private val deleteIcon: ImageView = itemView.findViewById(R.id.iv_delete)
 
     init {
@@ -22,7 +23,6 @@ class AlarmViewHolder(itemView: View, private val onDeleteClickListener: (positi
         itemView.setOnClickListener {
             onItemClick(adapterPosition)
         }
-
     }
 
     private fun showDeleteDialog() {
@@ -45,6 +45,6 @@ class AlarmViewHolder(itemView: View, private val onDeleteClickListener: (positi
 
     fun bind(alarm: AlarmItem) {
         timeTextView.text = alarm.formattedTime
-        switchAlarm.isChecked = alarm.isChecked
+        switchAlarm.isChecked = alarmAdapter.retrieveAlarmState(alarm)
     }
 }

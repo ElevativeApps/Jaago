@@ -46,7 +46,8 @@ class AlarmActivity : BaseActivity() {
             onItemClick = { position ->
                 // Handle item click event
                 startAddAlarmActivityWithPreSelection(position)
-            }
+            } ,
+            this
         )
 //        alarmAdapter = AlarmAdapter(alarms)
         recyclerView.adapter = alarmAdapter
@@ -135,7 +136,7 @@ class AlarmActivity : BaseActivity() {
             selectedTime?.let {
                 // Save the new alarm to the database
                 insertAlarm( selectedId ,it, selectedDays , true )
-                alarmAdapter.addAlarm(AlarmItem(selectedId ,it, selectedDays?.toList() ?: emptyList(), true ))
+                alarmAdapter.addAlarm(AlarmItem(selectedId ,it, selectedDays?.toList() ?: emptyList() , true ))
             }
         }
     }
