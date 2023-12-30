@@ -50,7 +50,6 @@ class AlarmActivity : BaseActivity() {
         )
 //        alarmAdapter = AlarmAdapter(alarms)
         recyclerView.adapter = alarmAdapter
-        Toast.makeText(this , "GitHub test Alarm" , Toast.LENGTH_SHORT).show()
     }
 
     private fun startAddAlarmActivityWithPreSelection(position: Int) {
@@ -116,13 +115,13 @@ class AlarmActivity : BaseActivity() {
         alarmAdapter.notifyItemRemoved(position)
     }
 
-    private fun insertAlarm(id: Long,time: String , selectedDays: Array<String>?) {
+    private fun insertAlarm(id: Long,time: String , selectedDays: Array<String>? , checked: Boolean) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(AlarmDbHelper.COLUMN_ID, id)
             put(AlarmDbHelper.COLUMN_TIME, time)
             put(AlarmDbHelper.COLUMN_SELECTED_DAYS, selectedDays?.joinToString(","))
-            put(AlarmDbHelper.COLUMN_IS_CHECKED, false)
+            put(AlarmDbHelper.COLUMN_IS_CHECKED, checked)
         }
         db.insert(AlarmDbHelper.TABLE_NAME, null, values)
     }
@@ -135,7 +134,7 @@ class AlarmActivity : BaseActivity() {
             val selectedDays = data?.getStringArrayExtra(AddAlarm.SELECTED_DAYS)
             selectedTime?.let {
                 // Save the new alarm to the database
-                insertAlarm( selectedId ,it, selectedDays)
+                insertAlarm( selectedId ,it, selectedDays , true )
                 alarmAdapter.addAlarm(AlarmItem(selectedId ,it, selectedDays?.toList() ?: emptyList(), true ))
             }
         }

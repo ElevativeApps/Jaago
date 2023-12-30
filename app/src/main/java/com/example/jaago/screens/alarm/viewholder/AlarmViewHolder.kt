@@ -22,6 +22,7 @@ class AlarmViewHolder(itemView: View, private val onDeleteClickListener: (positi
         itemView.setOnClickListener {
             onItemClick(adapterPosition)
         }
+
     }
 
     private fun showDeleteDialog() {
