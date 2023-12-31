@@ -57,7 +57,8 @@ class AddAlarm : AppCompatActivity() {
             val selectedTime = "$hour:$minute"
             val resultIntent = Intent()
             val uniqueId = System.currentTimeMillis()
-            resultIntent.putExtra(SELECTED_ID, uniqueId)
+            val selectedId = intent.getLongExtra(SELECTED_ID, -1)
+            resultIntent.putExtra(SELECTED_ID, selectedId)
             resultIntent.putExtra(SELECTED_TIME, selectedTime)
             resultIntent.putExtra(SELECTED_DAYS, selectedDays?.toTypedArray())
             setResult(Activity.RESULT_OK, resultIntent)

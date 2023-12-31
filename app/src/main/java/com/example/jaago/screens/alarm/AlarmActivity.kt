@@ -3,6 +3,7 @@ package com.example.jaago.screens.alarm
 import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
@@ -56,6 +57,7 @@ class AlarmActivity : BaseActivity() {
     private fun startAddAlarmActivityWithPreSelection(position: Int) {
         val selectedAlarm = alarms[position]
         val intent = Intent(this, AddAlarm::class.java).apply {
+            putExtra(AddAlarm.SELECTED_ID, selectedAlarm.id)
             putExtra(AddAlarm.SELECTED_TIME, selectedAlarm.time)
             putExtra(AddAlarm.SELECTED_DAYS, selectedAlarm.selectedDays.toTypedArray())
         }
@@ -124,7 +126,8 @@ class AlarmActivity : BaseActivity() {
             put(AlarmDbHelper.COLUMN_SELECTED_DAYS, selectedDays?.joinToString(","))
             put(AlarmDbHelper.COLUMN_IS_CHECKED, checked)
         }
-        db.insert(AlarmDbHelper.TABLE_NAME, null, values)
+
+        db.insertWithOnConflict(AlarmDbHelper.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -138,6 +141,48 @@ class AlarmActivity : BaseActivity() {
                 insertAlarm( selectedId ,it, selectedDays , true )
                 alarmAdapter.addAlarm(AlarmItem(selectedId ,it, selectedDays?.toList() ?: emptyList() , true ))
             }
+
+            if (selectedId != -1L) {
+                // Update existing alarm
+                updateAlarm(selectedId, selectedTime, selectedDays, true)
+            } else {
+                // Add new alarm
+                val uniqueId = System.currentTimeMillis()
+                if (selectedTime != null) {
+                    insertAlarm(uniqueId, selectedTime, selectedDays, true)
+                    alarmAdapter.addAlarm(AlarmItem(uniqueId, selectedTime, selectedDays?.toList() ?: emptyList(), true))
+                }
+            }
         }
+    }
+    private fun updateAlarm(id: Long, time: String?, selectedDays: Array<String>?, checked: Boolean) {
+        // Implement the logic to update an existing alarm
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(AlarmDbHelper.COLUMN_TIME, time)
+            put(AlarmDbHelper.COLUMN_SELECTED_DAYS, selectedDays?.joinToString(","))
+            put(AlarmDbHelper.COLUMN_IS_CHECKED, checked)
+        }
+        db.update(
+            AlarmDbHelper.TABLE_NAME,
+            values,
+            "${AlarmDbHelper.COLUMN_ID} = ?",
+            arrayOf(id.toString())
+        )
+        // You might need to update the AlarmItem in your alarms list as well
+        val updatedAlarm = alarms.find { it.id == id }
+        updatedAlarm?.apply {
+            this.time = time ?: ""
+            this.selectedDays = selectedDays?.toList() ?: emptyList()
+            this.isChecked = checked
+        }
+        alarmAdapter.notifyDataSetChanged()
+    }
+    override fun onResume() {
+        super.onResume()
+        // Fetch and display existing alarms
+        alarms.clear()  // Clear existing data
+        alarms.addAll(getAllAlarms())
+        alarmAdapter.notifyDataSetChanged()
     }
 }
