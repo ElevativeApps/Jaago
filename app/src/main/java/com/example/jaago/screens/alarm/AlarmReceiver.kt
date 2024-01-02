@@ -63,6 +63,7 @@ class AlarmReceiver : BroadcastReceiver() {
             .setSmallIcon(R.drawable.ic_alarm)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true) // Dismiss the notification when the user taps on it
             .setContentIntent(pendingIntent) // Set the intent to open StopAlarm activity
 
