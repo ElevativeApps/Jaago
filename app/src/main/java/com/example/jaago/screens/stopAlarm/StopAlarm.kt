@@ -22,7 +22,7 @@ class StopAlarm : AppCompatActivity() {
         val alarmId = intent.getLongExtra("ALARM_ID", -1L)
 
         if (alarmId != -1L) {
-            soundPlayerManager.play(this)
+//            soundPlayerManager.play(this)
         } else {
             finish()
         }
