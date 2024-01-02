@@ -1,6 +1,9 @@
 package com.example.jaago.screens.alarm
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
@@ -11,16 +14,20 @@ import android.widget.NumberPicker
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.jaago.MyApplication
 import com.example.jaago.R
+import com.example.jaago.SoundPlayerManager
 import com.example.jaago.model.AlarmItem
 import com.example.jaago.screens.base.BaseActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.util.*
 
 class AlarmActivity : BaseActivity() {
     private lateinit var addButton: FloatingActionButton
     private lateinit var dbHelper: AlarmDbHelper
     private lateinit var alarmAdapter: AlarmAdapter
     private lateinit var alarms: MutableList<AlarmItem>
+    private lateinit var soundPlayerManager: SoundPlayerManager
     companion object {
         const val TIME_SELECTION_REQUEST_CODE = 1
     }
@@ -52,6 +59,8 @@ class AlarmActivity : BaseActivity() {
         )
 //        alarmAdapter = AlarmAdapter(alarms)
         recyclerView.adapter = alarmAdapter
+
+        soundPlayerManager = (application as MyApplication).soundPlayerManager
     }
 
     private fun startAddAlarmActivityWithPreSelection(position: Int) {
@@ -128,6 +137,48 @@ class AlarmActivity : BaseActivity() {
         }
 
         db.insertWithOnConflict(AlarmDbHelper.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE)
+
+        // Set up the Alarm using AlarmManager with the alarm ID
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        // Convert the selected time to milliseconds
+        val alarmTimeInMillis = convertTimeToMillis(time)
+
+        val intent = Intent(this, AlarmReceiver::class.java).apply {
+            putExtra("ALARM_ID", id)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            id.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        // Set the alarm to trigger at the specified time
+        alarmManager.setExact(
+            AlarmManager.RTC_WAKEUP,
+            alarmTimeInMillis,
+            pendingIntent
+        )
+    }
+
+    private fun convertTimeToMillis(time: String): Long {
+        val calendar = Calendar.getInstance()
+        val parts = time.split(":")
+        val hour = parts[0].toInt()
+        val minute = parts[1].toInt()
+
+        // Set the calendar to the selected time
+        calendar.set(Calendar.HOUR_OF_DAY, hour)
+        calendar.set(Calendar.MINUTE, minute)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+
+        // Check if the selected time is in the future, otherwise add a day
+        if (calendar.timeInMillis <= System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        return calendar.timeInMillis
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
