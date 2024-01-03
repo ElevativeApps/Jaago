@@ -122,6 +122,8 @@ class AlarmActivity : BaseActivity() {
         // Remove alarm from the list and update the adapter
         alarms.removeAt(position)
         alarmAdapter.notifyItemRemoved(position)
+
+        cancelAlarm(idToDelete)
     }
 
     private fun insertAlarm(id: Long,time: String , selectedDays: Array<String>? , checked: Boolean) {
@@ -135,6 +137,22 @@ class AlarmActivity : BaseActivity() {
 
         db.insertWithOnConflict(AlarmDbHelper.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE)
 
+        setUpAlarm(id , time , selectedDays )
+    }
+
+    private fun cancelAlarm(id: Long) {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            id.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(pendingIntent)
+    }
+
+    private fun setUpAlarm(id: Long,time: String , selectedDays: Array<String>?) {
         // Set up the Alarm using AlarmManager with the alarm ID
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
@@ -143,6 +161,7 @@ class AlarmActivity : BaseActivity() {
 
         val intent = Intent(this, AlarmReceiver::class.java).apply {
             putExtra("ALARM_ID", id)
+            putExtra("SELECTED_DAYS" , selectedDays )
         }
         val pendingIntent = PendingIntent.getBroadcast(
             this,
@@ -204,6 +223,7 @@ class AlarmActivity : BaseActivity() {
         }
     }
     private fun updateAlarm(id: Long, time: String?, selectedDays: Array<String>?, checked: Boolean) {
+        cancelAlarm(id)
         // Implement the logic to update an existing alarm
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
@@ -223,6 +243,10 @@ class AlarmActivity : BaseActivity() {
             this.time = time ?: ""
             this.selectedDays = selectedDays?.toList() ?: emptyList()
             this.isChecked = checked
+        }
+        val updatedAlarmItem = alarms.find { it.id == id }
+        updatedAlarmItem?.let {
+            setUpAlarm(id, it.time, selectedDays)
         }
         alarmAdapter.notifyDataSetChanged()
     }
