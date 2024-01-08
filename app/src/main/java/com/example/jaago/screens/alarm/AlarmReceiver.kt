@@ -11,6 +11,9 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.jaago.MyApplication
 import com.example.jaago.R
+import com.example.jaago.model.MathQuestion
+import com.example.jaago.screens.maths.MathsPuzzle
+import com.example.jaago.screens.maths.MathsQna
 import com.example.jaago.screens.stopAlarm.StopAlarm
 import java.util.*
 
@@ -19,10 +22,15 @@ class AlarmReceiver : BroadcastReceiver() {
         // Handle the alarm event, show the notification, or start the activity
         val alarmId = intent?.getLongExtra("ALARM_ID", -1L) ?: -1L
         val selectedDays = intent?.getStringArrayExtra("SELECTED_DAYS")
+        val seekBarValue = intent?.getStringExtra("SEEK_BAR_VALUE")
+        val repetitions = intent?.getIntExtra("REPETITIONS", 1)
+
         Log.d("days_test_1" , "${selectedDays?.contentToString()}")
+        Log.d("seekBarValue_ar" , "$seekBarValue")
+        Log.d("repetitions_ar" , "$repetitions")
         if (alarmId != -1L) {
             // Show notification
-            showNotification(context!!, alarmId, selectedDays)
+            showNotification(context!!, alarmId, selectedDays , seekBarValue , repetitions )
 
             // Start StopAlarm activity
 //            val stopIntent = Intent(context, StopAlarm::class.java).apply {
@@ -33,7 +41,8 @@ class AlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun showNotification(context: Context, alarmId: Long, selectedDays: Array<String>?) {
+    private fun showNotification(context: Context, alarmId: Long, selectedDays: Array<String>? , seekBarValue: String?,
+                                 repetitions: Int?) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -48,14 +57,16 @@ class AlarmReceiver : BroadcastReceiver() {
         }
 
         // Create an intent to launch the StopAlarm activity
-        val stopIntent = Intent(context, StopAlarm::class.java).apply {
+        val mathsQnaIntent = Intent(context, MathsQna::class.java).apply {
             putExtra("ALARM_ID", alarmId)
+            putExtra("SEEK_BAR_VALUE", seekBarValue)
+            putExtra("REPETITIONS", repetitions)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
             alarmId.toInt(),
-            stopIntent,
+            mathsQnaIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 

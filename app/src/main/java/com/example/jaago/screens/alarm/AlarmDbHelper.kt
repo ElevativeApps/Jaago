@@ -9,13 +9,16 @@ class AlarmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
 
     companion object {
         const val DATABASE_NAME = "alarm_database"
-        const val DATABASE_VERSION = 6
+        const val DATABASE_VERSION = 9
 
         const val TABLE_NAME = "alarms"
         const val COLUMN_ID = "_id"
         const val COLUMN_TIME = "time"
         const val COLUMN_IS_CHECKED = "is_checked"
         const val COLUMN_SELECTED_DAYS = "selected_days"
+        const val COLUMN_PUZZLE = "puzzle"
+        const val COLUMN_REPETITIONS = "repetitions"
+        const val COLUMN_SEEK_BAR_VALUE = "seek_bar_value"
     }
 
     // Create the alarms table
@@ -25,6 +28,9 @@ class AlarmDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
             $COLUMN_TIME TEXT,
             $COLUMN_SELECTED_DAYS TEXT,
             $COLUMN_IS_CHECKED INTEGER DEFAULT 0,
+            $COLUMN_PUZZLE TEXT,
+            $COLUMN_REPETITIONS INTEGER,
+            $COLUMN_SEEK_BAR_VALUE TEXT,
             UNIQUE ($COLUMN_TIME, $COLUMN_SELECTED_DAYS)
         )
     """.trimIndent()

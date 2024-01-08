@@ -2,16 +2,14 @@ package com.example.jaago.screens.alarm
 
 import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.NumberPicker
-import android.widget.TextView
-import android.widget.TimePicker
 import com.example.jaago.R
-import com.google.android.material.button.MaterialButton
+import android.os.Bundle
+import android.os.Parcelable
+import android.util.Log
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import com.example.jaago.model.MathQuestion
+import com.example.jaago.screens.maths.MathsPuzzle
 
 class AddAlarm : AppCompatActivity() {
     private lateinit var everyDay: TextView
@@ -24,10 +22,17 @@ class AddAlarm : AppCompatActivity() {
     private lateinit var cbFriday: CheckBox
     private lateinit var cbSaturday: CheckBox
     private lateinit var cbSunday: CheckBox
+    private lateinit var mathsPuzzle: ImageView
+    private lateinit var shakePuzzle: ImageView
+    private lateinit var typingPuzzle: ImageView
     private var selectedDays: MutableList<String>? = null
     private var isSelectedEveryDay: Boolean = false
     private var isSelectedWeekDay: Boolean = false
     private var isSelectedWeekEnd: Boolean = false
+    private var seekBarValue: String? = null
+    private var repetitions: Int? = null
+    private lateinit var mathQuestions: Array<MathQuestion?>
+    private var puzzle: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_alarm)
@@ -61,6 +66,10 @@ class AddAlarm : AppCompatActivity() {
             resultIntent.putExtra(SELECTED_ID, selectedId)
             resultIntent.putExtra(SELECTED_TIME, selectedTime)
             resultIntent.putExtra(SELECTED_DAYS, selectedDays?.toTypedArray())
+            resultIntent.putExtra(SEEK_BAR_VALUE, seekBarValue)
+            resultIntent.putExtra(NUMBER_PICKER_VALUE, repetitions)
+//            resultIntent.putExtra(MATH_QUESTIONS, mathQuestions)
+            resultIntent.putExtra(PUZZLE , puzzle)
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
         }
@@ -111,6 +120,9 @@ class AddAlarm : AppCompatActivity() {
         cbFriday = findViewById(R.id.cb_friday)
         cbSaturday = findViewById(R.id.cb_saturday)
         cbSunday = findViewById(R.id.cb_sunday)
+        mathsPuzzle = findViewById(R.id.iv_maths)
+        shakePuzzle = findViewById(R.id.iv_shake)
+        typingPuzzle = findViewById(R.id.iv_typing)
 
         everyDay.setOnClickListener {
             markEveryDay()
@@ -120,6 +132,15 @@ class AddAlarm : AppCompatActivity() {
         }
         weekEnd.setOnClickListener {
             markWeekEnd()
+        }
+
+        mathsPuzzle.setOnClickListener {
+            val intent = Intent( this , MathsPuzzle::class.java)
+            val selectedRepetitions = intent.getIntExtra(SELECTED_REPETITIONS , 1)
+            val selectedSeekBar = intent.getStringExtra(SELECTED_SEEK_BAR_VALUE)
+            intent.putExtra(SELECTED_REPETITIONS, selectedRepetitions)
+            intent.putExtra(SELECTED_SEEK_BAR_VALUE, selectedSeekBar)
+            startActivityForResult(intent, MATHS_PUZZLE_REQUEST_CODE)
         }
     }
 
@@ -177,9 +198,31 @@ class AddAlarm : AppCompatActivity() {
         }
     }
 
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == MATHS_PUZZLE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // Handle the data returned from MathsPuzzle activity
+            seekBarValue = data?.getStringExtra(MathsPuzzle.EXTRA_SEEK_BAR_VALUE)
+            repetitions = data?.getIntExtra(MathsPuzzle.EXTRA_NUMBER_PICKER_VALUE , 1 )
+            val parcelableArray = data?.getParcelableArrayExtra(MathsPuzzle.EXTRA_MATH_QUESTIONS)
+            // Convert Parcelable[] to Array<MathQuestion>
+            mathQuestions = Array(parcelableArray?.size ?: 0) {
+                parcelableArray?.get(it) as? MathQuestion
+            }
+            puzzle = data?.getStringExtra(MathsPuzzle.EXTRA_PUZZLE)
+        }
+    }
     companion object {
         const val SELECTED_ID = "selected_id"
         const val SELECTED_TIME = "selected_time"
         const val SELECTED_DAYS = "selected_days"
+        const val SEEK_BAR_VALUE = "seek_bar_value"
+        const val NUMBER_PICKER_VALUE = "number_picker_value"
+        const val MATH_QUESTIONS = "math_question"
+        const val PUZZLE = "puzzle"
+        const val SELECTED_REPETITIONS = "selected_repetitions"
+        const val SELECTED_SEEK_BAR_VALUE = "selected_seek_bar_value"
+        const val MATHS_PUZZLE_REQUEST_CODE = 123
     }
 }

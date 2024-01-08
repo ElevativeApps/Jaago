@@ -20,6 +20,12 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
+            android:name=".screens.maths.MathsQna"
+            android:exported="false" />
+        <activity
+            android:name=".screens.maths.MathsPuzzle"
+            android:exported="false" />
+        <activity
             android:name=".screens.stopAlarm.StopAlarm"
             android:exported="false" />
         <activity
@@ -28,6 +34,7 @@
 
         <receiver android:name=".screens.timer.NotificationReceiver" />
         <receiver android:name=".screens.alarm.AlarmReceiver" />
+
         <activity
             android:name=".screens.timer.TimerActivity"
             android:exported="false"
