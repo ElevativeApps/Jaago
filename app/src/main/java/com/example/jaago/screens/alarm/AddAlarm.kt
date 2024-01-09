@@ -67,10 +67,14 @@ class AddAlarm : AppCompatActivity() {
             resultIntent.putExtra(SELECTED_TIME, selectedTime)
             resultIntent.putExtra(SELECTED_DAYS, selectedDays?.toTypedArray())
             if( selectedId != -1L ){
-                val selectedRepetitions = intent.getIntExtra(SELECTED_REPETITIONS , 1)
-                val selectedSeekBar = intent.getStringExtra(SELECTED_SEEK_BAR_VALUE)
-                Log.d("seekBarValue_aa" , "$selectedSeekBar")
-                Log.d("repetitions_aa" , "$selectedRepetitions")
+                var selectedRepetitions = intent.getIntExtra(SELECTED_REPETITIONS , 1)
+                var selectedSeekBar = intent.getStringExtra(SELECTED_SEEK_BAR_VALUE)
+                if( seekBarValue != null && repetitions != null ){
+                    selectedRepetitions = repetitions as Int
+                    selectedSeekBar = seekBarValue
+                }
+                Log.d("seekBarValue_aa_first" , "$selectedSeekBar")
+                Log.d("repetitions_aa_first" , "$selectedRepetitions")
                 resultIntent.putExtra(SEEK_BAR_VALUE, selectedSeekBar)
                 resultIntent.putExtra(NUMBER_PICKER_VALUE, selectedRepetitions)
             } else {
@@ -78,7 +82,6 @@ class AddAlarm : AppCompatActivity() {
                 resultIntent.putExtra(NUMBER_PICKER_VALUE, repetitions)
             }
 
-//            resultIntent.putExtra(MATH_QUESTIONS, mathQuestions)
             resultIntent.putExtra(PUZZLE , puzzle)
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
@@ -144,15 +147,21 @@ class AddAlarm : AppCompatActivity() {
             markWeekEnd()
         }
 
+        val selectedId = intent.getLongExtra(SELECTED_ID, -1)
+        val selectedRepetitions1 = intent.getIntExtra(SELECTED_REPETITIONS , 1)
+        val selectedSeekBar1 = intent.getStringExtra(SELECTED_SEEK_BAR_VALUE)
+        Log.d("seekBarValue_aa" , "$selectedSeekBar1")
+        Log.d("repetitions_aa" , "$selectedRepetitions1")
+        Log.d("id_aa" , "$selectedId")
+
         mathsPuzzle.setOnClickListener {
             val intent = Intent( this , MathsPuzzle::class.java)
-            val selectedRepetitions = intent.getIntExtra(SELECTED_REPETITIONS , 1)
-            val selectedSeekBar = intent.getStringExtra(SELECTED_SEEK_BAR_VALUE)
-
-            Log.d("seekBarValue_aa" , "$selectedSeekBar")
-            Log.d("repetitions_aa" , "$selectedRepetitions")
-            intent.putExtra(SELECTED_REPETITIONS, selectedRepetitions)
-            intent.putExtra(SELECTED_SEEK_BAR_VALUE, selectedSeekBar)
+            if( selectedId != -1L){
+                intent.putExtra(SAVED_REPETITIONS, selectedRepetitions1)
+                intent.putExtra(SAVED_SEEK_BAR, selectedSeekBar1)
+                Log.d("seekBarValue_aa_2" , "$selectedSeekBar1")
+                Log.d("repetitions_aa_2" , "$selectedRepetitions1")
+            }
             startActivityForResult(intent, MATHS_PUZZLE_REQUEST_CODE)
         }
     }
@@ -218,11 +227,6 @@ class AddAlarm : AppCompatActivity() {
             // Handle the data returned from MathsPuzzle activity
             seekBarValue = data?.getStringExtra(MathsPuzzle.EXTRA_SEEK_BAR_VALUE)
             repetitions = data?.getIntExtra(MathsPuzzle.EXTRA_NUMBER_PICKER_VALUE , 1 )
-            val parcelableArray = data?.getParcelableArrayExtra(MathsPuzzle.EXTRA_MATH_QUESTIONS)
-            // Convert Parcelable[] to Array<MathQuestion>
-            mathQuestions = Array(parcelableArray?.size ?: 0) {
-                parcelableArray?.get(it) as? MathQuestion
-            }
             puzzle = data?.getStringExtra(MathsPuzzle.EXTRA_PUZZLE)
         }
     }
@@ -237,5 +241,7 @@ class AddAlarm : AppCompatActivity() {
         const val SELECTED_REPETITIONS = "selected_repetitions"
         const val SELECTED_SEEK_BAR_VALUE = "selected_seek_bar_value"
         const val MATHS_PUZZLE_REQUEST_CODE = 123
+        const val SAVED_REPETITIONS = "saved_repetitions"
+        const val SAVED_SEEK_BAR = "saved_seek_bar"
     }
 }

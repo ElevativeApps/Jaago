@@ -18,6 +18,8 @@ import com.example.jaago.SoundPlayerManager
 import com.example.jaago.model.MathQuestion
 import com.example.jaago.model.generateMathQuestion
 import com.example.jaago.screens.alarm.AddAlarm
+import com.example.jaago.screens.alarm.AddAlarm.Companion.SAVED_REPETITIONS
+import com.example.jaago.screens.alarm.AddAlarm.Companion.SAVED_SEEK_BAR
 
 class MathsPuzzle : AppCompatActivity() {
     private lateinit var btnOk : Button
@@ -45,8 +47,11 @@ class MathsPuzzle : AppCompatActivity() {
 //        soundPlayerManager = (application as MyApplication).soundPlayerManager
 //        mathQuestions = intent.getParcelableArrayListExtra("MATH_QUESTIONS") ?: emptyList()
 //        showCurrentQuestion()
-        selectedRepetitions = intent.getIntExtra(AddAlarm.SELECTED_REPETITIONS, 1)
-        selectedSeekBarValue = intent.getStringExtra(AddAlarm.SELECTED_SEEK_BAR_VALUE)
+
+
+        selectedRepetitions = intent.getIntExtra(SAVED_REPETITIONS, 1)
+        selectedSeekBarValue = intent.getStringExtra(SAVED_SEEK_BAR)
+
         Log.d("seek Bar" , "{$selectedSeekBarValue}")
         Log.d("repetitions " , "{$selectedRepetitions}")
         init()
@@ -81,9 +86,6 @@ class MathsPuzzle : AppCompatActivity() {
             resultIntent.putExtra(EXTRA_SEEK_BAR_VALUE, selectedDifficulty)
             resultIntent.putExtra(EXTRA_NUMBER_PICKER_VALUE , selectedRepeatValue)
             resultIntent.putExtra(EXTRA_PUZZLE , "MATHS_PUZZLE")
-            val mathQuestions = generateMathQuestions(selectedDifficulty, selectedRepeatValue)
-            resultIntent.putExtra(EXTRA_MATH_QUESTIONS, mathQuestions.toTypedArray())
-
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
         }
