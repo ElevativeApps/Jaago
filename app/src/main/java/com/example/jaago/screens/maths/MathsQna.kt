@@ -3,6 +3,7 @@ package com.example.jaago.screens.maths
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -46,8 +47,10 @@ class MathsQna : AppCompatActivity() {
 
 
         soundPlayerManager = (application as MyApplication).soundPlayerManager
-        seekBarValue = intent.getStringExtra("SEEK_BAR_VALUE") ?: "EASY"
+        seekBarValue = intent.getStringExtra("SEEK_BAR_VALUE").toString()
         repetitions = intent.getIntExtra("REPETITIONS" , 1)
+        Log.d("seekBarValue_qna" , "$seekBarValue")
+        Log.d("repetitions_qna" , "$repetitions")
         mathQuestions = generateMathQuestions(seekBarValue, repetitions)
 
         editTextNumber.inputType = android.text.InputType.TYPE_CLASS_NUMBER

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
+import android.util.Log
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -208,6 +209,7 @@ class AlarmActivity : BaseActivity() {
             val seekBarValue = data?.getStringExtra(AddAlarm.SEEK_BAR_VALUE)
             val repetitions = data?.getIntExtra(AddAlarm.NUMBER_PICKER_VALUE , 1)
             val puzzle = data?.getStringExtra(AddAlarm.PUZZLE)
+
             selectedTime?.let {
                 // Save the new alarm to the database
                 insertAlarm( selectedId ,it, selectedDays , true , seekBarValue , repetitions , puzzle )
