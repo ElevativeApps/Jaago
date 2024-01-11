@@ -3,11 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,10 +20,20 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
+            android:name=".screens.maths.MathsQna"
+            android:exported="false" />
+        <activity
+            android:name=".screens.maths.MathsPuzzle"
+            android:exported="false" />
+        <activity
+            android:name=".screens.stopAlarm.StopAlarm"
+            android:exported="false" />
+        <activity
             android:name=".screens.alarm.AddAlarm"
             android:exported="false" />
 
         <receiver android:name=".screens.timer.NotificationReceiver" />
+        <receiver android:name=".screens.alarm.AlarmReceiver" />
 
         <activity
             android:name=".screens.timer.TimerActivity"
@@ -45,7 +58,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
     </application>
 
 </manifest>
