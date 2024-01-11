@@ -1,6 +1,9 @@
 package com.example.jaago.screens.alarm
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -10,7 +13,7 @@ import com.example.jaago.model.AlarmItem
 import com.example.jaago.screens.alarm.viewholder.AlarmViewHolder
 
 class AlarmAdapter(private val alarms: MutableList<AlarmItem>, private val onDeleteClickListener: (position: Int) -> Unit ,
-                   private val onItemClick: (position: Int) -> Unit , context: Context
+                   private val onItemClick: (position: Int) -> Unit , private val context: Context
 ) : RecyclerView.Adapter<AlarmViewHolder>() {
 
     private val sharedPreferences: SharedPreferences =
@@ -20,6 +23,18 @@ class AlarmAdapter(private val alarms: MutableList<AlarmItem>, private val onDel
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_alarm, parent, false)
         return AlarmViewHolder(view , onDeleteClickListener , onItemClick , this)
+    }
+    private fun cancelAlarm(alarmId: Long) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            alarmId.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(pendingIntent)
     }
 
     override fun onBindViewHolder(holder: AlarmViewHolder, position: Int) {
@@ -35,6 +50,9 @@ class AlarmAdapter(private val alarms: MutableList<AlarmItem>, private val onDel
             alarm.isChecked = isChecked
             saveAlarmState(alarm)
 
+            if (!isChecked) {
+                cancelAlarm(alarm.id)
+            }
         }
     }
 
