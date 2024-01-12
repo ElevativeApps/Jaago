@@ -2,14 +2,14 @@ package com.example.jaago.screens.alarm
 
 import android.app.Activity
 import android.content.Intent
-import com.example.jaago.R
 import android.os.Bundle
-import android.os.Parcelable
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.example.jaago.R
 import com.example.jaago.model.MathQuestion
 import com.example.jaago.screens.maths.MathsPuzzle
+import com.example.jaago.screens.shake.ShakePuzzle
 
 class AddAlarm : AppCompatActivity() {
     private lateinit var everyDay: TextView
@@ -73,8 +73,6 @@ class AddAlarm : AppCompatActivity() {
                     selectedRepetitions = repetitions as Int
                     selectedSeekBar = seekBarValue
                 }
-                Log.d("seekBarValue_aa_first" , "$selectedSeekBar")
-                Log.d("repetitions_aa_first" , "$selectedRepetitions")
                 resultIntent.putExtra(SEEK_BAR_VALUE, selectedSeekBar)
                 resultIntent.putExtra(NUMBER_PICKER_VALUE, selectedRepetitions)
             } else {
@@ -164,6 +162,14 @@ class AddAlarm : AppCompatActivity() {
             }
             startActivityForResult(intent, MATHS_PUZZLE_REQUEST_CODE)
         }
+
+        shakePuzzle.setOnClickListener {
+            val intent = Intent( this , ShakePuzzle::class.java)
+            if( selectedId != -1L){
+                intent.putExtra(SAVED_REPETITIONS, selectedRepetitions1)
+            }
+            startActivityForResult(intent, SHAKE_PUZZLE_REQUEST_CODE)
+        }
     }
 
     private fun markWeekEnd() {
@@ -228,7 +234,11 @@ class AddAlarm : AppCompatActivity() {
             seekBarValue = data?.getStringExtra(MathsPuzzle.EXTRA_SEEK_BAR_VALUE)
             repetitions = data?.getIntExtra(MathsPuzzle.EXTRA_NUMBER_PICKER_VALUE , 1 )
             puzzle = data?.getStringExtra(MathsPuzzle.EXTRA_PUZZLE)
+        } else if( requestCode == SHAKE_PUZZLE_REQUEST_CODE && resultCode == Activity.RESULT_OK ) {
+            repetitions = data?.getIntExtra(ShakePuzzle.EXTRA_NUMBER_PICKER_VALUE_SHAKE , 2 )
+            puzzle = data?.getStringExtra(ShakePuzzle.EXTRA_PUZZLE)
         }
+
     }
     companion object {
         const val SELECTED_ID = "selected_id"
@@ -243,5 +253,6 @@ class AddAlarm : AppCompatActivity() {
         const val MATHS_PUZZLE_REQUEST_CODE = 123
         const val SAVED_REPETITIONS = "saved_repetitions"
         const val SAVED_SEEK_BAR = "saved_seek_bar"
+        const val SHAKE_PUZZLE_REQUEST_CODE = 456
     }
 }
