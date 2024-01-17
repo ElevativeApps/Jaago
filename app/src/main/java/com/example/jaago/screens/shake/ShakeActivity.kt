@@ -25,7 +25,7 @@ class ShakeActivity : AppCompatActivity() , SensorEventListener{
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shake)
         soundPlayerManager = (application as MyApplication).soundPlayerManager
-        remainingRepetitions = intent.getIntExtra("REPETITIONS" , 2)
+        remainingRepetitions = intent.getIntExtra("SHAKE_REPETITIONS" , 2)
         Log.d("Shake Count" ," $remainingRepetitions")
         tvShake = findViewById(R.id.tv_shake)
         setUpSensor()

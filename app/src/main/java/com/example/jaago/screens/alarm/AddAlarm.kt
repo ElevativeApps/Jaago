@@ -31,6 +31,7 @@ class AddAlarm : AppCompatActivity() {
     private var isSelectedWeekEnd: Boolean = false
     private var seekBarValue: String? = null
     private var repetitions: Int? = null
+    private var shakeRepetitions: Int? = null
     private lateinit var mathQuestions: Array<MathQuestion?>
     private var puzzle: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,9 +76,11 @@ class AddAlarm : AppCompatActivity() {
                 }
                 resultIntent.putExtra(SEEK_BAR_VALUE, selectedSeekBar)
                 resultIntent.putExtra(NUMBER_PICKER_VALUE, selectedRepetitions)
+                resultIntent.putExtra(NUMBER_PICKER_VALUE_SHAKE , shakeRepetitions)
             } else {
                 resultIntent.putExtra(SEEK_BAR_VALUE, seekBarValue)
-                resultIntent.putExtra(NUMBER_PICKER_VALUE, repetitions)
+                resultIntent.putExtra(NUMBER_PICKER_VALUE_SHAKE, repetitions)
+                resultIntent.putExtra(NUMBER_PICKER_VALUE_SHAKE , shakeRepetitions)
             }
 
             resultIntent.putExtra(PUZZLE , puzzle)
@@ -235,7 +238,7 @@ class AddAlarm : AppCompatActivity() {
             repetitions = data?.getIntExtra(MathsPuzzle.EXTRA_NUMBER_PICKER_VALUE , 1 )
             puzzle = data?.getStringExtra(MathsPuzzle.EXTRA_PUZZLE)
         } else if( requestCode == SHAKE_PUZZLE_REQUEST_CODE && resultCode == Activity.RESULT_OK ) {
-            repetitions = data?.getIntExtra(ShakePuzzle.EXTRA_NUMBER_PICKER_VALUE_SHAKE , 2 )
+            shakeRepetitions = data?.getIntExtra(ShakePuzzle.EXTRA_NUMBER_PICKER_VALUE_SHAKE , 2 )
             puzzle = data?.getStringExtra(ShakePuzzle.EXTRA_PUZZLE)
         }
 
@@ -246,6 +249,7 @@ class AddAlarm : AppCompatActivity() {
         const val SELECTED_DAYS = "selected_days"
         const val SEEK_BAR_VALUE = "seek_bar_value"
         const val NUMBER_PICKER_VALUE = "number_picker_value"
+        const val NUMBER_PICKER_VALUE_SHAKE = "number_picker_value_shake"
         const val MATH_QUESTIONS = "math_question"
         const val PUZZLE = "puzzle"
         const val SELECTED_REPETITIONS = "selected_repetitions"

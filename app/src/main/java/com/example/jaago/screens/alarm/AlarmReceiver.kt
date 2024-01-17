@@ -26,13 +26,15 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
         val seekBarValue = intent?.getStringExtra("SEEK_BAR_VALUE")
         val repetitions = intent?.getIntExtra("REPETITIONS", 1)
         val puzzle = intent?.getStringExtra("PUZZLE")
+        val shakeRepetitions = intent?.getIntExtra("SHAKE_REPETITIONS" , 2)
 
         Log.d("days_test_1", "${selectedDays?.contentToString()}")
         Log.d("seekBarValue_ar", "$seekBarValue")
         Log.d("repetitions_ar", "$repetitions")
+        Log.d("shake_repetitions", "$shakeRepetitions")
         if (alarmId != -1L) {
             // Show notification
-            showNotification(context!!, alarmId, selectedDays, seekBarValue, repetitions, puzzle)
+            showNotification(context!!, alarmId, selectedDays, seekBarValue, repetitions, puzzle , shakeRepetitions)
 
             // Complete the wakeful work
             completeWakefulIntent(intent)
@@ -45,7 +47,8 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
         selectedDays: Array<String>?,
         seekBarValue: String?,
         repetitions: Int?,
-        puzzle: String?
+        puzzle: String?,
+        shakeRepetitions: Int?
     ) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -78,7 +81,7 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
         } else if (puzzle == "SHAKE_PUZZLE") {
             val shakeActivityIntent = Intent(context, ShakeActivity::class.java).apply {
                 putExtra("ALARM_ID", alarmId)
-                putExtra("REPETITIONS", repetitions)
+                putExtra("SHAKE_REPETITIONS", shakeRepetitions)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             pendingIntent = PendingIntent.getActivity(
