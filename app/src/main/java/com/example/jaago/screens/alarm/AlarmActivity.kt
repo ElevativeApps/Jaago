@@ -7,9 +7,11 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.LinearLayout
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.jaago.MyApplication
@@ -153,7 +155,8 @@ class AlarmActivity : BaseActivity() {
         alarmManager.cancel(pendingIntent)
     }
 
-    private fun setUpAlarm(id: Long,time: String , selectedDays: Array<String>? , seekBarValue: String?, repetitions: Int?,
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun setUpAlarm(id: Long, time: String, selectedDays: Array<String>?, seekBarValue: String?, repetitions: Int?,
                            puzzle: String?) {
         // Set up the Alarm using AlarmManager with the alarm ID
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -175,7 +178,7 @@ class AlarmActivity : BaseActivity() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         // Set the alarm to trigger at the specified time
-        alarmManager.setExact(
+        alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             alarmTimeInMillis,
             pendingIntent

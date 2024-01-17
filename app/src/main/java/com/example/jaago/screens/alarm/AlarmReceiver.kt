@@ -10,13 +10,15 @@ import android.os.Build
 import android.text.format.DateUtils.getDayOfWeekString
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.legacy.content.WakefulBroadcastReceiver
 import com.example.jaago.MyApplication
 import com.example.jaago.R
 import com.example.jaago.screens.maths.MathsQna
 import com.example.jaago.screens.shake.ShakeActivity
 import java.util.*
 
-class AlarmReceiver : BroadcastReceiver() {
+class AlarmReceiver : WakefulBroadcastReceiver() {
+
     override fun onReceive(context: Context?, intent: Intent?) {
         // Handle the alarm event, show the notification, or start the activity
         val alarmId = intent?.getLongExtra("ALARM_ID", -1L) ?: -1L
@@ -25,24 +27,26 @@ class AlarmReceiver : BroadcastReceiver() {
         val repetitions = intent?.getIntExtra("REPETITIONS", 1)
         val puzzle = intent?.getStringExtra("PUZZLE")
 
-        Log.d("days_test_1" , "${selectedDays?.contentToString()}")
-        Log.d("seekBarValue_ar" , "$seekBarValue")
-        Log.d("repetitions_ar" , "$repetitions")
+        Log.d("days_test_1", "${selectedDays?.contentToString()}")
+        Log.d("seekBarValue_ar", "$seekBarValue")
+        Log.d("repetitions_ar", "$repetitions")
         if (alarmId != -1L) {
             // Show notification
-            showNotification(context!!, alarmId, selectedDays , seekBarValue , repetitions , puzzle )
+            showNotification(context!!, alarmId, selectedDays, seekBarValue, repetitions, puzzle)
 
-            // Start StopAlarm activity
-//            val stopIntent = Intent(context, StopAlarm::class.java).apply {
-//                putExtra("ALARM_ID", alarmId)
-//                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//            }
-//            context.startActivity(stopIntent)
+            // Complete the wakeful work
+            completeWakefulIntent(intent)
         }
     }
 
-    private fun showNotification(context: Context, alarmId: Long, selectedDays: Array<String>? , seekBarValue: String?,
-                                 repetitions: Int? , puzzle: String?) {
+    private fun showNotification(
+        context: Context,
+        alarmId: Long,
+        selectedDays: Array<String>?,
+        seekBarValue: String?,
+        repetitions: Int?,
+        puzzle: String?
+    ) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -58,7 +62,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
         // Create an intent to launch the StopAlarm activity
         var pendingIntent: PendingIntent? = null
-        if( puzzle == "MATHS_PUZZLE" ){
+        if (puzzle == "MATHS_PUZZLE") {
             val mathsQnaIntent = Intent(context, MathsQna::class.java).apply {
                 putExtra("ALARM_ID", alarmId)
                 putExtra("SEEK_BAR_VALUE", seekBarValue)
@@ -71,8 +75,8 @@ class AlarmReceiver : BroadcastReceiver() {
                 mathsQnaIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-        } else if( puzzle == "SHAKE_PUZZLE"){
-            val shakeActivityIntent = Intent( context , ShakeActivity::class.java).apply{
+        } else if (puzzle == "SHAKE_PUZZLE") {
+            val shakeActivityIntent = Intent(context, ShakeActivity::class.java).apply {
                 putExtra("ALARM_ID", alarmId)
                 putExtra("REPETITIONS", repetitions)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -96,7 +100,6 @@ class AlarmReceiver : BroadcastReceiver() {
             .setAutoCancel(true) // Dismiss the notification when the user taps on it
             .setContentIntent(pendingIntent) // Set the intent to open StopAlarm activity
 
-
         if (selectedDays != null && selectedDays.isNotEmpty()) {
             // Get the current day of the week
             val currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
@@ -104,12 +107,14 @@ class AlarmReceiver : BroadcastReceiver() {
 
             if (selectedDays.contains(currentDayString)) {
 
-                val soundPlayerManager = (context.applicationContext as MyApplication).soundPlayerManager
+                val soundPlayerManager =
+                    (context.applicationContext as MyApplication).soundPlayerManager
                 soundPlayerManager.play(context)
                 notificationManager.notify(alarmId.toInt(), notificationBuilder.build())
             }
         } else {
-            val soundPlayerManager = (context.applicationContext as MyApplication).soundPlayerManager
+            val soundPlayerManager =
+                (context.applicationContext as MyApplication).soundPlayerManager
             soundPlayerManager.play(context)
             notificationManager.notify(alarmId.toInt(), notificationBuilder.build())
         }
