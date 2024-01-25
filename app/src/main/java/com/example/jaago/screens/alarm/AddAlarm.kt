@@ -10,6 +10,7 @@ import com.example.jaago.R
 import com.example.jaago.model.MathQuestion
 import com.example.jaago.screens.maths.MathsPuzzle
 import com.example.jaago.screens.shake.ShakePuzzle
+import com.example.jaago.screens.typing.TypingPuzzle
 
 class AddAlarm : AppCompatActivity() {
     private lateinit var everyDay: TextView
@@ -34,6 +35,7 @@ class AddAlarm : AppCompatActivity() {
     private var shakeRepetitions: Int? = null
     private lateinit var mathQuestions: Array<MathQuestion?>
     private var puzzle: String? = null
+    private var selectedText: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_alarm)
@@ -82,7 +84,7 @@ class AddAlarm : AppCompatActivity() {
                 resultIntent.putExtra(NUMBER_PICKER_VALUE_SHAKE, repetitions)
                 resultIntent.putExtra(NUMBER_PICKER_VALUE_SHAKE , shakeRepetitions)
             }
-
+            resultIntent.putExtra(SELECTED_SENTENCE , selectedText)
             resultIntent.putExtra(PUZZLE , puzzle)
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
@@ -151,17 +153,12 @@ class AddAlarm : AppCompatActivity() {
         val selectedId = intent.getLongExtra(SELECTED_ID, -1)
         val selectedRepetitions1 = intent.getIntExtra(SELECTED_REPETITIONS , 1)
         val selectedSeekBar1 = intent.getStringExtra(SELECTED_SEEK_BAR_VALUE)
-        Log.d("seekBarValue_aa" , "$selectedSeekBar1")
-        Log.d("repetitions_aa" , "$selectedRepetitions1")
-        Log.d("id_aa" , "$selectedId")
 
         mathsPuzzle.setOnClickListener {
             val intent = Intent( this , MathsPuzzle::class.java)
             if( selectedId != -1L){
                 intent.putExtra(SAVED_REPETITIONS, selectedRepetitions1)
                 intent.putExtra(SAVED_SEEK_BAR, selectedSeekBar1)
-                Log.d("seekBarValue_aa_2" , "$selectedSeekBar1")
-                Log.d("repetitions_aa_2" , "$selectedRepetitions1")
             }
             startActivityForResult(intent, MATHS_PUZZLE_REQUEST_CODE)
         }
@@ -172,6 +169,11 @@ class AddAlarm : AppCompatActivity() {
                 intent.putExtra(SAVED_REPETITIONS, selectedRepetitions1)
             }
             startActivityForResult(intent, SHAKE_PUZZLE_REQUEST_CODE)
+        }
+
+        typingPuzzle.setOnClickListener {
+            val intent = Intent( this , TypingPuzzle::class.java)
+            startActivityForResult(intent, TYPING_PUZZLE_REQUEST_CODE)
         }
     }
 
@@ -240,6 +242,9 @@ class AddAlarm : AppCompatActivity() {
         } else if( requestCode == SHAKE_PUZZLE_REQUEST_CODE && resultCode == Activity.RESULT_OK ) {
             shakeRepetitions = data?.getIntExtra(ShakePuzzle.EXTRA_NUMBER_PICKER_VALUE_SHAKE , 2 )
             puzzle = data?.getStringExtra(ShakePuzzle.EXTRA_PUZZLE)
+        } else if ( requestCode == TYPING_PUZZLE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            selectedText = data?.getStringExtra(TypingPuzzle.EXTRA_SENTENCE)
+            puzzle = data?.getStringExtra(TypingPuzzle.EXTRA_PUZZLE)
         }
 
     }
@@ -247,6 +252,7 @@ class AddAlarm : AppCompatActivity() {
         const val SELECTED_ID = "selected_id"
         const val SELECTED_TIME = "selected_time"
         const val SELECTED_DAYS = "selected_days"
+        const val SELECTED_SENTENCE = "selected_sentence"
         const val SEEK_BAR_VALUE = "seek_bar_value"
         const val NUMBER_PICKER_VALUE = "number_picker_value"
         const val NUMBER_PICKER_VALUE_SHAKE = "number_picker_value_shake"
@@ -258,5 +264,6 @@ class AddAlarm : AppCompatActivity() {
         const val SAVED_REPETITIONS = "saved_repetitions"
         const val SAVED_SEEK_BAR = "saved_seek_bar"
         const val SHAKE_PUZZLE_REQUEST_CODE = 456
+        const val TYPING_PUZZLE_REQUEST_CODE = 789
     }
 }
