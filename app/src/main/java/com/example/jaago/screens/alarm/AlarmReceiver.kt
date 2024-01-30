@@ -15,6 +15,7 @@ import com.example.jaago.MyApplication
 import com.example.jaago.R
 import com.example.jaago.screens.maths.MathsQna
 import com.example.jaago.screens.shake.ShakeActivity
+import com.example.jaago.screens.typing.TypingActivity
 import java.util.*
 
 class AlarmReceiver : WakefulBroadcastReceiver() {
@@ -27,14 +28,17 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
         val repetitions = intent?.getIntExtra("REPETITIONS", 1)
         val puzzle = intent?.getStringExtra("PUZZLE")
         val shakeRepetitions = intent?.getIntExtra("SHAKE_REPETITIONS" , 2)
-
+        val selectedSentence = intent?.getStringExtra("SELECTED_SENTENCE")
         Log.d("days_test_1", "${selectedDays?.contentToString()}")
         Log.d("seekBarValue_ar", "$seekBarValue")
         Log.d("repetitions_ar", "$repetitions")
         Log.d("shake_repetitions", "$shakeRepetitions")
+        Log.d("selected_sentence" , "$selectedSentence")
         if (alarmId != -1L) {
             // Show notification
-            showNotification(context!!, alarmId, selectedDays, seekBarValue, repetitions, puzzle , shakeRepetitions)
+            if( shouldRingToday( selectedDays ) ){
+                showNotification(context!!, alarmId, selectedDays, seekBarValue, repetitions, puzzle , shakeRepetitions , selectedSentence)
+            }
 
             // Complete the wakeful work
             completeWakefulIntent(intent)
@@ -48,7 +52,8 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
         seekBarValue: String?,
         repetitions: Int?,
         puzzle: String?,
-        shakeRepetitions: Int?
+        shakeRepetitions: Int?,
+        selectedSentence: String?
     ) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -90,6 +95,18 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
                 shakeActivityIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
+        } else if ( puzzle == "TYPING_PUZZLE") {
+            val shakeActivityIntent = Intent(context, TypingActivity::class.java).apply {
+                putExtra("ALARM_ID", alarmId)
+                putExtra("SELECTED_SENTENCE", selectedSentence)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            pendingIntent = PendingIntent.getActivity(
+                context,
+                alarmId.toInt(),
+                shakeActivityIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
         }
 
         // Create a notification
@@ -103,24 +120,29 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
             .setAutoCancel(true) // Dismiss the notification when the user taps on it
             .setContentIntent(pendingIntent) // Set the intent to open StopAlarm activity
 
-        if (selectedDays != null && selectedDays.isNotEmpty()) {
-            // Get the current day of the week
-            val currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-            val currentDayString = getDayOfWeekString(currentDay)
+//        if (selectedDays != null && selectedDays.isNotEmpty()) {
+//            // Get the current day of the week
+//            val currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+//            val currentDayString = getDayOfWeekString(currentDay)
+//
+//            if (selectedDays.contains(currentDayString)) {
+//
+//                val soundPlayerManager =
+//                    (context.applicationContext as MyApplication).soundPlayerManager
+//                soundPlayerManager.play(context)
+//                notificationManager.notify(alarmId.toInt(), notificationBuilder.build())
+//            }
+//        } else {
+//            val soundPlayerManager =
+//                (context.applicationContext as MyApplication).soundPlayerManager
+//            soundPlayerManager.play(context)
+//            notificationManager.notify(alarmId.toInt(), notificationBuilder.build())
+//        }
 
-            if (selectedDays.contains(currentDayString)) {
-
-                val soundPlayerManager =
-                    (context.applicationContext as MyApplication).soundPlayerManager
-                soundPlayerManager.play(context)
-                notificationManager.notify(alarmId.toInt(), notificationBuilder.build())
-            }
-        } else {
             val soundPlayerManager =
                 (context.applicationContext as MyApplication).soundPlayerManager
             soundPlayerManager.play(context)
             notificationManager.notify(alarmId.toInt(), notificationBuilder.build())
-        }
     }
 
     private fun getDayOfWeekString(dayOfWeek: Int): String {
@@ -134,5 +156,15 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
             Calendar.SATURDAY -> "_saturday"
             else -> throw IllegalArgumentException("Invalid day of week: $dayOfWeek")
         }
+    }
+    private fun shouldRingToday(selectedDays: Array<String>?): Boolean {
+        if (selectedDays != null && selectedDays.isNotEmpty()) {
+            val currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            val currentDayString = getDayOfWeekString(currentDay)
+            Log.d("currentDay", "$currentDay")
+            Log.d("currentDayString", "$currentDayString")
+            return selectedDays.contains(currentDayString)
+        }
+        return false
     }
 }

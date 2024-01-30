@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".screens.alarm.AlarmActivity">
+
+    <TextView
+        android:id="@+id/tv_settings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Settings"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:gravity="center_horizontal"
+        android:layout_margin="12dp"/>
+
+    <TextView
+        android:id="@+id/tv_others"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Others"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_margin="8dp"
+        android:layout_below="@id/tv_settings"/>
+    <LinearLayout
+        android:id="@+id/ll_rate_us"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="20dp"
+        android:layout_below="@id/tv_others">
+        <TextView
+            android:id="@+id/tv_rate_us"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Rate Us"
+            android:textSize="24sp"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_right"
+            android:layout_gravity="center"
+            android:layout_marginEnd="12dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_share"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:layout_below="@id/ll_rate_us">
+        <TextView
+            android:id="@+id/tv_share"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Share"
+            android:textSize="24sp"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_right"
+            android:layout_gravity="center"
+            android:layout_marginEnd="12dp"/>
+    </LinearLayout>
+
+
+</RelativeLayout>
