@@ -5,11 +5,11 @@
         android:title="Alarm"
         android:icon="@drawable/ic_alarm"/>
     <item
-        android:id="@+id/action_stopwatch"
-        android:title="Stop Watch"
-        android:icon="@drawable/ic_stop_watch"/>
-    <item
         android:id="@+id/action_timer"
-        android:title="timer"
+        android:title="Timer"
         android:icon="@drawable/ic_timer"/>
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        android:icon="@drawable/ic_settings"/>
 </menu>
