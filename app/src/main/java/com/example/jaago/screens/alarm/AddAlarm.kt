@@ -1,13 +1,18 @@
 package com.example.jaago.screens.alarm
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.jaago.R
 import com.example.jaago.model.MathQuestion
+import com.example.jaago.model.RingtoneModel
 import com.example.jaago.screens.maths.MathsPuzzle
 import com.example.jaago.screens.shake.ShakePuzzle
 import com.example.jaago.screens.typing.TypingPuzzle
@@ -26,6 +31,7 @@ class AddAlarm : AppCompatActivity() {
     private lateinit var mathsPuzzle: ImageView
     private lateinit var shakePuzzle: ImageView
     private lateinit var typingPuzzle: ImageView
+    private lateinit var ringtoneLayout: LinearLayout
     private var selectedDays: MutableList<String>? = null
     private var isSelectedEveryDay: Boolean = false
     private var isSelectedWeekDay: Boolean = false
@@ -36,6 +42,7 @@ class AddAlarm : AppCompatActivity() {
     private lateinit var mathQuestions: Array<MathQuestion?>
     private var puzzle: String? = null
     private var selectedText: String? = null
+    private var selectedRingtone: RingtoneModel? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_alarm)
@@ -139,6 +146,7 @@ class AddAlarm : AppCompatActivity() {
         mathsPuzzle = findViewById(R.id.iv_maths)
         shakePuzzle = findViewById(R.id.iv_shake)
         typingPuzzle = findViewById(R.id.iv_typing)
+        ringtoneLayout = findViewById(R.id.ll_ringtone)
 
         everyDay.setOnClickListener {
             markEveryDay()
@@ -148,6 +156,9 @@ class AddAlarm : AppCompatActivity() {
         }
         weekEnd.setOnClickListener {
             markWeekEnd()
+        }
+        ringtoneLayout.setOnClickListener {
+            showRingtoneDialog()
         }
 
         val selectedId = intent.getLongExtra(SELECTED_ID, -1)
@@ -231,7 +242,51 @@ class AddAlarm : AppCompatActivity() {
         }
     }
 
+    private fun showRingtoneDialog() {
+        val ringtoneList: List<RingtoneModel> = getRingtoneList()
 
+        val adapter = RingtoneAdapter(ringtoneList) { selectedRingtone ->
+            // Handle the selected ringtone
+            // You can play the ringtone here for preview if needed
+            this.selectedRingtone = selectedRingtone
+        }
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_ringtone_selection, null)
+        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.rvRingtoneList)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Select Ringtone")
+            .setView(dialogView)
+            .setPositiveButton("OK") { _, _ ->
+                // Handle the OK button click
+                // Set the selected ringtone for the alarm
+                saveRingtoneWithAlarm(selectedRingtone)
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.show()
+    }
+    private fun saveRingtoneWithAlarm(ringtone: RingtoneModel?) {
+        // Save the selected ringtone with the alarm
+        // You can save 'ringtone.uri.toString()' or any other necessary information
+
+        // Example: Save to SharedPreferences
+        val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("selectedRingtoneUri", ringtone?.uri.toString())
+        editor.apply()
+
+        // Set the result to be sent back to the calling activity (AlarmActivity)
+        val resultIntent = Intent()
+        resultIntent.putExtra("selectedRingtoneUri", ringtone?.uri.toString())
+        setResult(Activity.RESULT_OK, resultIntent)
+
+        // Finish the activity
+        finish()
+    }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == MATHS_PUZZLE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
@@ -265,5 +320,6 @@ class AddAlarm : AppCompatActivity() {
         const val SAVED_SEEK_BAR = "saved_seek_bar"
         const val SHAKE_PUZZLE_REQUEST_CODE = 456
         const val TYPING_PUZZLE_REQUEST_CODE = 789
+        const val RINGTONE_REQUEST_CODE = 333
     }
 }

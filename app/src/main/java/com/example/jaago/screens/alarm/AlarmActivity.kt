@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.LinearLayout
@@ -17,6 +18,7 @@ import com.example.jaago.MyApplication
 import com.example.jaago.R
 import com.example.jaago.SoundPlayerManager
 import com.example.jaago.model.AlarmItem
+import com.example.jaago.model.RingtoneModel
 import com.example.jaago.screens.base.BaseActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.*
@@ -29,6 +31,7 @@ class AlarmActivity : BaseActivity() {
     private lateinit var soundPlayerManager: SoundPlayerManager
     companion object {
         const val TIME_SELECTION_REQUEST_CODE = 1
+        const val RINGTONE_REQUEST_CODE = 2
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -235,6 +238,14 @@ class AlarmActivity : BaseActivity() {
                     insertAlarm(uniqueId, selectedTime, selectedDays, true ,  seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence )
                     alarmAdapter.addAlarm(AlarmItem(uniqueId, selectedTime, selectedDays?.toList() ?: emptyList(), true  , puzzle , seekBarValue , repetitions , shakeRepetitions , selectedSentence ))
                 }
+            }
+        } else if (requestCode == RINGTONE_REQUEST_CODE && resultCode == RESULT_OK) {
+            // Handle ringtone selection result
+            val selectedRingtoneUri = data?.getStringExtra("selectedRingtoneUri")
+            if (!selectedRingtoneUri.isNullOrEmpty()) {
+                // Now, you have the selected ringtone URI, you can use it as needed
+                val ringtone = RingtoneModel("Selected Ringtone", Uri.parse(selectedRingtoneUri))
+                // Do whatever you need with 'ringtone'
             }
         }
     }
