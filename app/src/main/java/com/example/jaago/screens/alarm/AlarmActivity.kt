@@ -267,7 +267,7 @@ class AlarmActivity : BaseActivity() {
         }
         db.update(
             AlarmDbHelper.TABLE_NAME,
-            values,
+             values,
             "${AlarmDbHelper.COLUMN_ID} = ?",
             arrayOf(id.toString())
         )
