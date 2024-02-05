@@ -1,15 +1,24 @@
 package com.example.jaago.screens.alarm
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
-import com.example.jaago.R
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
-import android.os.Parcelable
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.jaago.R
 import com.example.jaago.model.MathQuestion
+import com.example.jaago.model.RingtoneModel
 import com.example.jaago.screens.maths.MathsPuzzle
+import com.example.jaago.screens.shake.ShakePuzzle
+import com.example.jaago.screens.typing.TypingPuzzle
+import java.io.IOException
 
 class AddAlarm : AppCompatActivity() {
     private lateinit var everyDay: TextView
@@ -25,14 +34,20 @@ class AddAlarm : AppCompatActivity() {
     private lateinit var mathsPuzzle: ImageView
     private lateinit var shakePuzzle: ImageView
     private lateinit var typingPuzzle: ImageView
+    private lateinit var ringtoneLayout: LinearLayout
     private var selectedDays: MutableList<String>? = null
     private var isSelectedEveryDay: Boolean = false
     private var isSelectedWeekDay: Boolean = false
     private var isSelectedWeekEnd: Boolean = false
     private var seekBarValue: String? = null
+    private var selectedRingtoneUri: String? = null
     private var repetitions: Int? = null
+    private var shakeRepetitions: Int? = null
     private lateinit var mathQuestions: Array<MathQuestion?>
     private var puzzle: String? = null
+    private var selectedText: String? = null
+    private var selectedRingtone: RingtoneModel? = null
+    private lateinit var mediaPlayer: MediaPlayer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_alarm)
@@ -73,16 +88,17 @@ class AddAlarm : AppCompatActivity() {
                     selectedRepetitions = repetitions as Int
                     selectedSeekBar = seekBarValue
                 }
-                Log.d("seekBarValue_aa_first" , "$selectedSeekBar")
-                Log.d("repetitions_aa_first" , "$selectedRepetitions")
                 resultIntent.putExtra(SEEK_BAR_VALUE, selectedSeekBar)
                 resultIntent.putExtra(NUMBER_PICKER_VALUE, selectedRepetitions)
+                resultIntent.putExtra(NUMBER_PICKER_VALUE_SHAKE , shakeRepetitions)
             } else {
                 resultIntent.putExtra(SEEK_BAR_VALUE, seekBarValue)
-                resultIntent.putExtra(NUMBER_PICKER_VALUE, repetitions)
+                resultIntent.putExtra(NUMBER_PICKER_VALUE_SHAKE, repetitions)
+                resultIntent.putExtra(NUMBER_PICKER_VALUE_SHAKE , shakeRepetitions)
             }
-
+            resultIntent.putExtra(SELECTED_SENTENCE , selectedText)
             resultIntent.putExtra(PUZZLE , puzzle)
+            resultIntent.putExtra(RINGTONE, selectedRingtoneUri)
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
         }
@@ -136,7 +152,8 @@ class AddAlarm : AppCompatActivity() {
         mathsPuzzle = findViewById(R.id.iv_maths)
         shakePuzzle = findViewById(R.id.iv_shake)
         typingPuzzle = findViewById(R.id.iv_typing)
-
+        ringtoneLayout = findViewById(R.id.ll_ringtone)
+        mediaPlayer = MediaPlayer()
         everyDay.setOnClickListener {
             markEveryDay()
         }
@@ -146,23 +163,34 @@ class AddAlarm : AppCompatActivity() {
         weekEnd.setOnClickListener {
             markWeekEnd()
         }
+        ringtoneLayout.setOnClickListener {
+            showRingtoneDialog()
+        }
 
         val selectedId = intent.getLongExtra(SELECTED_ID, -1)
         val selectedRepetitions1 = intent.getIntExtra(SELECTED_REPETITIONS , 1)
         val selectedSeekBar1 = intent.getStringExtra(SELECTED_SEEK_BAR_VALUE)
-        Log.d("seekBarValue_aa" , "$selectedSeekBar1")
-        Log.d("repetitions_aa" , "$selectedRepetitions1")
-        Log.d("id_aa" , "$selectedId")
 
         mathsPuzzle.setOnClickListener {
             val intent = Intent( this , MathsPuzzle::class.java)
             if( selectedId != -1L){
                 intent.putExtra(SAVED_REPETITIONS, selectedRepetitions1)
                 intent.putExtra(SAVED_SEEK_BAR, selectedSeekBar1)
-                Log.d("seekBarValue_aa_2" , "$selectedSeekBar1")
-                Log.d("repetitions_aa_2" , "$selectedRepetitions1")
             }
             startActivityForResult(intent, MATHS_PUZZLE_REQUEST_CODE)
+        }
+
+        shakePuzzle.setOnClickListener {
+            val intent = Intent( this , ShakePuzzle::class.java)
+            if( selectedId != -1L){
+                intent.putExtra(SAVED_REPETITIONS, selectedRepetitions1)
+            }
+            startActivityForResult(intent, SHAKE_PUZZLE_REQUEST_CODE)
+        }
+
+        typingPuzzle.setOnClickListener {
+            val intent = Intent( this , TypingPuzzle::class.java)
+            startActivityForResult(intent, TYPING_PUZZLE_REQUEST_CODE)
         }
     }
 
@@ -220,7 +248,86 @@ class AddAlarm : AppCompatActivity() {
         }
     }
 
+    private fun showRingtoneDialog() {
+        val ringtoneList: List<RingtoneModel> = getRingtoneList()
 
+        val adapter = RingtoneAdapter(ringtoneList) { selectedRingtone ->
+            // Handle the selected ringtone
+            // You can play the ringtone here for preview if needed
+            playRingtone(selectedRingtone.uri)
+            this.selectedRingtone = selectedRingtone
+            selectedRingtoneUri = selectedRingtone.uri.toString()
+        }
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_ringtone_selection, null)
+        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.rvRingtoneList)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Select Ringtone")
+            .setView(dialogView)
+            .setPositiveButton("OK") { _, _ ->
+                // Handle the OK button click
+                // Set the selected ringtone for the alarm
+
+//                saveRingtoneWithAlarm(selectedRingtone)
+                stopRingtone()
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                // Stop playing the ringtone if canceled
+                stopRingtone()
+            }
+            .create()
+
+        dialog.show()
+    }
+    private fun playRingtone(ringtoneUri: Uri) {
+        try {
+            mediaPlayer.reset()
+            mediaPlayer.setDataSource(this, ringtoneUri)
+            mediaPlayer.prepare()
+            mediaPlayer.start()
+        } catch (e: IOException) {
+            Log.e("MediaPlayer", "Error playing ringtone", e)
+        }
+    }
+
+    private fun stopRingtone() {
+        if (mediaPlayer.isPlaying) {
+            mediaPlayer.stop()
+        }
+    }
+    private fun getRingtoneList(): List<RingtoneModel> {
+        val ringtoneList = mutableListOf<RingtoneModel>()
+
+        // Add specific ringtones to the list
+        ringtoneList.add(RingtoneModel("Alarm 1", Uri.parse("android.resource://${packageName}/${R.raw.alarm1}")))
+        ringtoneList.add(RingtoneModel("Alarm 2", Uri.parse("android.resource://${packageName}/${R.raw.alarm2}")))
+        ringtoneList.add(RingtoneModel("Alarm 3", Uri.parse("android.resource://${packageName}/${R.raw.alarm3}")))
+        ringtoneList.add(RingtoneModel("Alarm 4", Uri.parse("android.resource://${packageName}/${R.raw.alarm4}")))
+        ringtoneList.add(RingtoneModel("Alarm 5", Uri.parse("android.resource://${packageName}/${R.raw.alarm5}")))
+        ringtoneList.add(RingtoneModel("Alarm 6", Uri.parse("android.resource://${packageName}/${R.raw.alarm6}")))
+        ringtoneList.add(RingtoneModel("Alarm 7", Uri.parse("android.resource://${packageName}/${R.raw.test1}")))
+
+        return ringtoneList
+    }
+    private fun saveRingtoneWithAlarm(ringtone: RingtoneModel?) {
+        // Save the selected ringtone with the alarm
+        // You can save 'ringtone.uri.toString()' or any other necessary information
+
+        // Example: Save to SharedPreferences
+        val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("selectedRingtoneUri", ringtone?.uri.toString())
+        editor.apply()
+
+        // Set the result to be sent back to the calling activity (AlarmActivity)
+        val resultIntent = Intent()
+        resultIntent.putExtra("selectedRingtoneUri", ringtone?.uri.toString())
+        setResult(Activity.RESULT_OK, resultIntent)
+
+    }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == MATHS_PUZZLE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
@@ -228,14 +335,33 @@ class AddAlarm : AppCompatActivity() {
             seekBarValue = data?.getStringExtra(MathsPuzzle.EXTRA_SEEK_BAR_VALUE)
             repetitions = data?.getIntExtra(MathsPuzzle.EXTRA_NUMBER_PICKER_VALUE , 1 )
             puzzle = data?.getStringExtra(MathsPuzzle.EXTRA_PUZZLE)
+        } else if( requestCode == SHAKE_PUZZLE_REQUEST_CODE && resultCode == Activity.RESULT_OK ) {
+            shakeRepetitions = data?.getIntExtra(ShakePuzzle.EXTRA_NUMBER_PICKER_VALUE_SHAKE , 2 )
+            puzzle = data?.getStringExtra(ShakePuzzle.EXTRA_PUZZLE)
+        } else if ( requestCode == TYPING_PUZZLE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            selectedText = data?.getStringExtra(TypingPuzzle.EXTRA_SENTENCE)
+            puzzle = data?.getStringExtra(TypingPuzzle.EXTRA_PUZZLE)
         }
+//        else if (requestCode == RINGTONE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+//            // Handle the result from AddAlarm activity
+//            selectedRingtoneUri = data?.getStringExtra("selectedRingtoneUri")
+//
+//        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Release MediaPlayer resources
+        mediaPlayer.release()
     }
     companion object {
         const val SELECTED_ID = "selected_id"
         const val SELECTED_TIME = "selected_time"
         const val SELECTED_DAYS = "selected_days"
+        const val SELECTED_SENTENCE = "selected_sentence"
         const val SEEK_BAR_VALUE = "seek_bar_value"
         const val NUMBER_PICKER_VALUE = "number_picker_value"
+        const val NUMBER_PICKER_VALUE_SHAKE = "number_picker_value_shake"
         const val MATH_QUESTIONS = "math_question"
         const val PUZZLE = "puzzle"
         const val SELECTED_REPETITIONS = "selected_repetitions"
@@ -243,5 +369,9 @@ class AddAlarm : AppCompatActivity() {
         const val MATHS_PUZZLE_REQUEST_CODE = 123
         const val SAVED_REPETITIONS = "saved_repetitions"
         const val SAVED_SEEK_BAR = "saved_seek_bar"
+        const val SHAKE_PUZZLE_REQUEST_CODE = 456
+        const val TYPING_PUZZLE_REQUEST_CODE = 789
+        const val RINGTONE_REQUEST_CODE = 333
+        const val RINGTONE = "ringtone"
     }
 }
