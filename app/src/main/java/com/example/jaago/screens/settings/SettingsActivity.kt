@@ -12,7 +12,8 @@ class SettingsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
+        val fragmentLayout = findViewById<LinearLayout>(R.id.fragment_layout)
+        layoutInflater.inflate(R.layout.activity_settings , fragmentLayout)
 
         val tvRateUs = findViewById<TextView>(R.id.tv_rate_us)
         val llRateUs = findViewById<LinearLayout>(R.id.ll_rate_us)
