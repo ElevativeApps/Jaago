@@ -7,10 +7,10 @@ import androidx.core.content.ContextCompat
 class SoundPlayerManager {
     private var soundPlayer: SoundPlayer? = null
 
-    fun play(context: Context) {
+    fun play( ringtoneUri: String? , context: Context) {
         stop() // Stop previous sound if it's playing
         soundPlayer = SoundPlayer(context)
-        soundPlayer?.play()
+        soundPlayer?.play(ringtoneUri , context)
     }
 
     fun stop() {

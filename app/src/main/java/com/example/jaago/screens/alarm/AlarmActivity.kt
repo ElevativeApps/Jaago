@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.LinearLayout
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -82,7 +83,7 @@ class AlarmActivity : BaseActivity() {
         val db = dbHelper.writableDatabase
         val cursor: Cursor? = db.query(
             AlarmDbHelper.TABLE_NAME,
-            arrayOf( AlarmDbHelper.COLUMN_ID, AlarmDbHelper.COLUMN_TIME, AlarmDbHelper.COLUMN_IS_CHECKED , AlarmDbHelper.COLUMN_SELECTED_DAYS , AlarmDbHelper.COLUMN_PUZZLE , AlarmDbHelper.COLUMN_SEEK_BAR_VALUE , AlarmDbHelper.COLUMN_REPETITIONS , AlarmDbHelper.COLUMN_SHAKE_REPETITIONS , AlarmDbHelper.COLUMN_SELECTED_SENTENCE),
+            arrayOf( AlarmDbHelper.COLUMN_ID, AlarmDbHelper.COLUMN_TIME, AlarmDbHelper.COLUMN_IS_CHECKED , AlarmDbHelper.COLUMN_SELECTED_DAYS , AlarmDbHelper.COLUMN_PUZZLE , AlarmDbHelper.COLUMN_SEEK_BAR_VALUE , AlarmDbHelper.COLUMN_REPETITIONS , AlarmDbHelper.COLUMN_SHAKE_REPETITIONS , AlarmDbHelper.COLUMN_SELECTED_SENTENCE , AlarmDbHelper.COLUMN_SELECTED_RINGTONE),
             null,
             null,
             null,
@@ -100,7 +101,8 @@ class AlarmActivity : BaseActivity() {
             val repetitions = cursor.getInt(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_REPETITIONS))
             val shakeRepetitions = cursor.getInt(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_SHAKE_REPETITIONS))
             val selectedSentence = cursor.getString(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_SELECTED_SENTENCE))
-            val alarmItem = AlarmItem( id , time , selectedDays , isChecked , puzzle , seekBarValue , repetitions , shakeRepetitions , selectedSentence )
+            val selectedRingtone = cursor.getString(cursor.getColumnIndexOrThrow(AlarmDbHelper.COLUMN_SELECTED_RINGTONE))
+            val alarmItem = AlarmItem( id , time , selectedDays , isChecked , puzzle , seekBarValue , repetitions , shakeRepetitions , selectedSentence , selectedRingtone )
             alarms.add(alarmItem)
         }
         cursor?.close()
@@ -129,7 +131,7 @@ class AlarmActivity : BaseActivity() {
     private fun insertAlarm(
         id: Long,
         time: String, selectedDays: Array<String>?, checked: Boolean, seekBarValue: String?, repetitions: Int?,
-        puzzle: String? ,shakeRepetitions: Int? , selectedSentence: String?
+        puzzle: String? ,shakeRepetitions: Int? , selectedSentence: String? , selectedRingtone: String?
     ) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
@@ -141,11 +143,12 @@ class AlarmActivity : BaseActivity() {
             put(AlarmDbHelper.COLUMN_REPETITIONS , repetitions)
             put(AlarmDbHelper.COLUMN_SEEK_BAR_VALUE , seekBarValue)
             put(AlarmDbHelper.COLUMN_SELECTED_SENTENCE , selectedSentence)
+            put(AlarmDbHelper.COLUMN_SELECTED_RINGTONE , selectedRingtone)
         }
 
         db.insertWithOnConflict(AlarmDbHelper.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE)
 
-        setUpAlarm(id , time , selectedDays, seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence)
+        setUpAlarm(id , time , selectedDays, seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence , selectedRingtone)
     }
 
     private fun cancelAlarm(id: Long) {
@@ -162,7 +165,7 @@ class AlarmActivity : BaseActivity() {
 
     @RequiresApi(Build.VERSION_CODES.M)
     private fun setUpAlarm(id: Long, time: String, selectedDays: Array<String>?, seekBarValue: String?, repetitions: Int?,
-                           puzzle: String?, shakeRepetitions: Int?, selectedSentence: String?) {
+                           puzzle: String?, shakeRepetitions: Int?, selectedSentence: String? , selectedRingtone: String? ) {
         // Set up the Alarm using AlarmManager with the alarm ID
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
@@ -177,6 +180,7 @@ class AlarmActivity : BaseActivity() {
             putExtra("SEEK_BAR_VALUE", seekBarValue)
             putExtra("SHAKE_REPETITIONS" , shakeRepetitions)
             putExtra("SELECTED_SENTENCE" , selectedSentence)
+            putExtra("SELECTED_RINGTONE" , selectedRingtone)
         }
         val pendingIntent = PendingIntent.getBroadcast(
             this,
@@ -221,37 +225,32 @@ class AlarmActivity : BaseActivity() {
             val repetitions = data?.getIntExtra(AddAlarm.NUMBER_PICKER_VALUE , 1)
             val shakeRepetitions = data?.getIntExtra(AddAlarm.NUMBER_PICKER_VALUE_SHAKE , 2)
             val puzzle = data?.getStringExtra(AddAlarm.PUZZLE)
+            val ringtone = data?.getStringExtra(AddAlarm.RINGTONE)
+
+            Log.d("selected_ringtone" , "$ringtone")
             val selectedSentence = data?.getStringExtra(AddAlarm.SELECTED_SENTENCE)
             selectedTime?.let {
                 // Save the new alarm to the database
-                insertAlarm( selectedId ,it, selectedDays , true , seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence )
-                alarmAdapter.addAlarm(AlarmItem(selectedId ,it, selectedDays?.toList() ?: emptyList() , true , puzzle , seekBarValue , repetitions , shakeRepetitions , selectedSentence ))
+                insertAlarm( selectedId ,it, selectedDays , true , seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence , ringtone )
+                alarmAdapter.addAlarm(AlarmItem(selectedId ,it, selectedDays?.toList() ?: emptyList() , true , puzzle , seekBarValue , repetitions , shakeRepetitions , selectedSentence , ringtone))
             }
 
             if (selectedId != -1L) {
                 // Update existing alarm
-                updateAlarm(selectedId, selectedTime, selectedDays, true , seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence)
+                updateAlarm(selectedId, selectedTime, selectedDays, true , seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence , ringtone )
             } else {
                 // Add new alarm
                 val uniqueId = System.currentTimeMillis()
                 if (selectedTime != null) {
-                    insertAlarm(uniqueId, selectedTime, selectedDays, true ,  seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence )
-                    alarmAdapter.addAlarm(AlarmItem(uniqueId, selectedTime, selectedDays?.toList() ?: emptyList(), true  , puzzle , seekBarValue , repetitions , shakeRepetitions , selectedSentence ))
+                    insertAlarm(uniqueId, selectedTime, selectedDays, true ,  seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence , ringtone )
+                    alarmAdapter.addAlarm(AlarmItem(uniqueId, selectedTime, selectedDays?.toList() ?: emptyList(), true  , puzzle , seekBarValue , repetitions , shakeRepetitions , selectedSentence , ringtone ))
                 }
-            }
-        } else if (requestCode == RINGTONE_REQUEST_CODE && resultCode == RESULT_OK) {
-            // Handle ringtone selection result
-            val selectedRingtoneUri = data?.getStringExtra("selectedRingtoneUri")
-            if (!selectedRingtoneUri.isNullOrEmpty()) {
-                // Now, you have the selected ringtone URI, you can use it as needed
-                val ringtone = RingtoneModel("Selected Ringtone", Uri.parse(selectedRingtoneUri))
-                // Do whatever you need with 'ringtone'
             }
         }
     }
     @RequiresApi(Build.VERSION_CODES.M)
     private fun updateAlarm(id: Long, time: String?, selectedDays: Array<String>?, checked: Boolean, seekBarValue: String?, repetitions: Int?,
-                            puzzle: String? , shakeRepetitions: Int? , selectedSentence: String?)  {
+                            puzzle: String? , shakeRepetitions: Int? , selectedSentence: String? , selectedRingtone: String?)  {
         cancelAlarm(id)
         // Implement the logic to update an existing alarm
         val db = dbHelper.writableDatabase
@@ -264,6 +263,7 @@ class AlarmActivity : BaseActivity() {
             put(AlarmDbHelper.COLUMN_SEEK_BAR_VALUE , seekBarValue)
             put(AlarmDbHelper.COLUMN_SHAKE_REPETITIONS , shakeRepetitions)
             put(AlarmDbHelper.COLUMN_SELECTED_SENTENCE , selectedSentence)
+            put(AlarmDbHelper.COLUMN_SELECTED_RINGTONE , selectedRingtone)
         }
         db.update(
             AlarmDbHelper.TABLE_NAME,
@@ -282,10 +282,11 @@ class AlarmActivity : BaseActivity() {
             this.puzzleType = puzzle
             this.shakeRepetitions = shakeRepetitions
             this.selectedSentence = selectedSentence
+            this.selectedRingtone = selectedRingtone
         }
         val updatedAlarmItem = alarms.find { it.id == id }
         updatedAlarmItem?.let {
-            setUpAlarm(id, it.time, selectedDays , seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence )
+            setUpAlarm(id, it.time, selectedDays , seekBarValue , repetitions , puzzle , shakeRepetitions , selectedSentence , selectedRingtone )
         }
         alarmAdapter.notifyDataSetChanged()
     }

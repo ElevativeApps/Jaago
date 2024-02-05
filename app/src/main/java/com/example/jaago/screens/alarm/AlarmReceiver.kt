@@ -29,15 +29,17 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
         val puzzle = intent?.getStringExtra("PUZZLE")
         val shakeRepetitions = intent?.getIntExtra("SHAKE_REPETITIONS" , 2)
         val selectedSentence = intent?.getStringExtra("SELECTED_SENTENCE")
+        val selectedRingtone = intent?.getStringExtra("SELECTED_RINGTONE")
         Log.d("days_test_1", "${selectedDays?.contentToString()}")
         Log.d("seekBarValue_ar", "$seekBarValue")
         Log.d("repetitions_ar", "$repetitions")
         Log.d("shake_repetitions", "$shakeRepetitions")
         Log.d("selected_sentence" , "$selectedSentence")
+        Log.d("selected_reason" , "$selectedRingtone")
         if (alarmId != -1L) {
             // Show notification
             if( shouldRingToday( selectedDays ) ){
-                showNotification(context!!, alarmId, selectedDays, seekBarValue, repetitions, puzzle , shakeRepetitions , selectedSentence)
+                showNotification(context!!, alarmId, selectedDays, seekBarValue, repetitions, puzzle , shakeRepetitions , selectedSentence , selectedRingtone)
             }
 
             // Complete the wakeful work
@@ -53,7 +55,8 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
         repetitions: Int?,
         puzzle: String?,
         shakeRepetitions: Int?,
-        selectedSentence: String?
+        selectedSentence: String?,
+        selectedRingtone: String?
     ) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -139,10 +142,9 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
 //            notificationManager.notify(alarmId.toInt(), notificationBuilder.build())
 //        }
 
-            val soundPlayerManager =
-                (context.applicationContext as MyApplication).soundPlayerManager
-            soundPlayerManager.play(context)
-            notificationManager.notify(alarmId.toInt(), notificationBuilder.build())
+        val soundPlayerManager = (context.applicationContext as MyApplication).soundPlayerManager
+        soundPlayerManager.play(selectedRingtone, context)
+        notificationManager.notify(alarmId.toInt(), notificationBuilder.build())
     }
 
     private fun getDayOfWeekString(dayOfWeek: Int): String {

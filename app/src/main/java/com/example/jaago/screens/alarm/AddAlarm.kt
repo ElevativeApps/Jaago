@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.*
@@ -16,6 +18,7 @@ import com.example.jaago.model.RingtoneModel
 import com.example.jaago.screens.maths.MathsPuzzle
 import com.example.jaago.screens.shake.ShakePuzzle
 import com.example.jaago.screens.typing.TypingPuzzle
+import java.io.IOException
 
 class AddAlarm : AppCompatActivity() {
     private lateinit var everyDay: TextView
@@ -37,12 +40,14 @@ class AddAlarm : AppCompatActivity() {
     private var isSelectedWeekDay: Boolean = false
     private var isSelectedWeekEnd: Boolean = false
     private var seekBarValue: String? = null
+    private var selectedRingtoneUri: String? = null
     private var repetitions: Int? = null
     private var shakeRepetitions: Int? = null
     private lateinit var mathQuestions: Array<MathQuestion?>
     private var puzzle: String? = null
     private var selectedText: String? = null
     private var selectedRingtone: RingtoneModel? = null
+    private lateinit var mediaPlayer: MediaPlayer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_alarm)
@@ -93,6 +98,7 @@ class AddAlarm : AppCompatActivity() {
             }
             resultIntent.putExtra(SELECTED_SENTENCE , selectedText)
             resultIntent.putExtra(PUZZLE , puzzle)
+            resultIntent.putExtra(RINGTONE, selectedRingtoneUri)
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
         }
@@ -147,7 +153,7 @@ class AddAlarm : AppCompatActivity() {
         shakePuzzle = findViewById(R.id.iv_shake)
         typingPuzzle = findViewById(R.id.iv_typing)
         ringtoneLayout = findViewById(R.id.ll_ringtone)
-
+        mediaPlayer = MediaPlayer()
         everyDay.setOnClickListener {
             markEveryDay()
         }
@@ -248,7 +254,9 @@ class AddAlarm : AppCompatActivity() {
         val adapter = RingtoneAdapter(ringtoneList) { selectedRingtone ->
             // Handle the selected ringtone
             // You can play the ringtone here for preview if needed
+            playRingtone(selectedRingtone.uri)
             this.selectedRingtone = selectedRingtone
+            selectedRingtoneUri = selectedRingtone.uri.toString()
         }
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_ringtone_selection, null)
@@ -262,12 +270,47 @@ class AddAlarm : AppCompatActivity() {
             .setPositiveButton("OK") { _, _ ->
                 // Handle the OK button click
                 // Set the selected ringtone for the alarm
-                saveRingtoneWithAlarm(selectedRingtone)
+
+//                saveRingtoneWithAlarm(selectedRingtone)
+                stopRingtone()
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton("Cancel") { _, _ ->
+                // Stop playing the ringtone if canceled
+                stopRingtone()
+            }
             .create()
 
         dialog.show()
+    }
+    private fun playRingtone(ringtoneUri: Uri) {
+        try {
+            mediaPlayer.reset()
+            mediaPlayer.setDataSource(this, ringtoneUri)
+            mediaPlayer.prepare()
+            mediaPlayer.start()
+        } catch (e: IOException) {
+            Log.e("MediaPlayer", "Error playing ringtone", e)
+        }
+    }
+
+    private fun stopRingtone() {
+        if (mediaPlayer.isPlaying) {
+            mediaPlayer.stop()
+        }
+    }
+    private fun getRingtoneList(): List<RingtoneModel> {
+        val ringtoneList = mutableListOf<RingtoneModel>()
+
+        // Add specific ringtones to the list
+        ringtoneList.add(RingtoneModel("Alarm 1", Uri.parse("android.resource://${packageName}/${R.raw.alarm1}")))
+        ringtoneList.add(RingtoneModel("Alarm 2", Uri.parse("android.resource://${packageName}/${R.raw.alarm2}")))
+        ringtoneList.add(RingtoneModel("Alarm 3", Uri.parse("android.resource://${packageName}/${R.raw.alarm3}")))
+        ringtoneList.add(RingtoneModel("Alarm 4", Uri.parse("android.resource://${packageName}/${R.raw.alarm4}")))
+        ringtoneList.add(RingtoneModel("Alarm 5", Uri.parse("android.resource://${packageName}/${R.raw.alarm5}")))
+        ringtoneList.add(RingtoneModel("Alarm 6", Uri.parse("android.resource://${packageName}/${R.raw.alarm6}")))
+        ringtoneList.add(RingtoneModel("Alarm 7", Uri.parse("android.resource://${packageName}/${R.raw.test1}")))
+
+        return ringtoneList
     }
     private fun saveRingtoneWithAlarm(ringtone: RingtoneModel?) {
         // Save the selected ringtone with the alarm
@@ -284,8 +327,6 @@ class AddAlarm : AppCompatActivity() {
         resultIntent.putExtra("selectedRingtoneUri", ringtone?.uri.toString())
         setResult(Activity.RESULT_OK, resultIntent)
 
-        // Finish the activity
-        finish()
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -301,7 +342,17 @@ class AddAlarm : AppCompatActivity() {
             selectedText = data?.getStringExtra(TypingPuzzle.EXTRA_SENTENCE)
             puzzle = data?.getStringExtra(TypingPuzzle.EXTRA_PUZZLE)
         }
+//        else if (requestCode == RINGTONE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+//            // Handle the result from AddAlarm activity
+//            selectedRingtoneUri = data?.getStringExtra("selectedRingtoneUri")
+//
+//        }
+    }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        // Release MediaPlayer resources
+        mediaPlayer.release()
     }
     companion object {
         const val SELECTED_ID = "selected_id"
@@ -321,5 +372,6 @@ class AddAlarm : AppCompatActivity() {
         const val SHAKE_PUZZLE_REQUEST_CODE = 456
         const val TYPING_PUZZLE_REQUEST_CODE = 789
         const val RINGTONE_REQUEST_CODE = 333
+        const val RINGTONE = "ringtone"
     }
 }
