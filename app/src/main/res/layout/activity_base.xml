@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/light_background"
     tools:context=".screens.base.BaseActivity">
 
     <LinearLayout
@@ -19,7 +20,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         app:menu="@menu/bottom_navigation_bar"
-        android:background="@color/white"
+        android:background="@color/color_primary"
+        app:itemIconTint="@drawable/nav_item_color_state"
+        app:itemTextColor="@drawable/nav_item_color_state"
         android:layout_alignParentBottom="true">
     </com.google.android.material.bottomnavigation.BottomNavigationView>
 
