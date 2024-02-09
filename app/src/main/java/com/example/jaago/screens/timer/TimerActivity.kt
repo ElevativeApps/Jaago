@@ -352,10 +352,10 @@ class TimerActivity : BaseActivity(), View.OnClickListener {
     }
     override fun onDestroy() {
         super.onDestroy()
-        countDownTimer?.cancel()
-        if (::mediaPlayer.isInitialized && mediaPlayer.isPlaying) {
-            stopNotificationSound()
-        }
+//        countDownTimer?.cancel()
+//        if (::mediaPlayer.isInitialized && mediaPlayer.isPlaying) {
+//            stopNotificationSound()
+//        }
     }
 
 }
