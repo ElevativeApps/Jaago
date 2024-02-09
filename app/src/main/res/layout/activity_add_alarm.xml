@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/light_background"
     tools:context=".screens.alarm.AddAlarm">
 
     <RelativeLayout
@@ -96,9 +97,9 @@
                     android:layout_weight="1"
                     android:text="Everyday"
                     android:background="@drawable/bg_item_alarm"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:gravity="center"
-                    android:layout_margin="10dp"
+                    android:layout_margin="5dp"
                     android:padding="5dp"/>
                 <TextView
                     android:id="@+id/tv_weekDay"
@@ -107,9 +108,9 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_item_alarm"
                     android:text="Weekday"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:gravity="center"
-                    android:layout_margin="10dp"
+                    android:layout_margin="5dp"
                     android:padding="5dp"/>
                 <TextView
                     android:id="@+id/tv_weekEnd"
@@ -118,9 +119,9 @@
                     android:layout_weight="1"
                     android:background="@drawable/bg_item_alarm"
                     android:text="Weekend"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:gravity="center"
-                    android:layout_margin="10dp"
+                    android:layout_margin="5dp"
                     android:padding="5dp"/>
 
             </LinearLayout>
@@ -398,7 +399,7 @@
                         android:id="@+id/iv_maths"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:src="@drawable/ic_timer"
+                        android:src="@drawable/ic_maths"
                         android:layout_gravity="center"/>
                     <TextView
                         android:layout_width="wrap_content"
@@ -419,7 +420,7 @@
                         android:id="@+id/iv_shake"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:src="@drawable/ic_timer"
+                        android:src="@drawable/ic_shake"
                         android:layout_gravity="center"/>
                     <TextView
                         android:layout_width="wrap_content"
@@ -439,7 +440,7 @@
                         android:id="@+id/iv_typing"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:src="@drawable/ic_timer"
+                        android:src="@drawable/ic_typing"
                         android:layout_gravity="center"/>
                     <TextView
                         android:layout_width="wrap_content"
